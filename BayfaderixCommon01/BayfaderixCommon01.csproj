@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Name.Bayfaderix.Darxxemiyur</RootNamespace>
+    <Title>Name.Bayfaderix</Title>
+    <PackageProjectUrl>https://source.bayfaderix.name/</PackageProjectUrl>
+    <Copyright>https://s.bayfaderix.name/about/darxx</Copyright>
+    <Description>Feel free to use my code IF you find it reliable and useful
+No need to credit or similar at all(like you would have lol)</Description>
+    <Authors>https://s.bayfaderix.name/about/darxx</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
+  </ItemGroup>
+
+</Project>
