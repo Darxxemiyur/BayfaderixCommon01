@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Name.Bayfaderix.Darxxemiyur</RootNamespace>
-    <Title>Name.Bayfaderix</Title>
+    <Title>Name.Bayfaderix.Darxxemiyur.Common</Title>
     <PackageProjectUrl>https://source.bayfaderix.name/</PackageProjectUrl>
     <Copyright>https://s.bayfaderix.name/about/darxx</Copyright>
     <Description>Feel free to use my code IF you find it reliable and useful
