@@ -6,38 +6,58 @@
 	public class FIFOPFIFOTCollection<T>
 	{
 		private readonly Queue<T> _queue;
-		private readonly Queue<MyTaskSource<T>> _executors;
+		private readonly Queue<MyTaskSource<T>> _receivers;
 		private readonly AsyncLocker _lock;
 
 		public FIFOPFIFOTCollection()
 		{
 			_lock = new();
 			_queue = new();
-			_executors = new();
+			_receivers = new();
 		}
 
-		private async Task InnerPlaceItem(T order)
+		private async Task InnerPlaceItem(T item)
 		{
-			if (_executors.Count > 0)
+			if (_receivers.Count > 0)
 			{
-				var rem = _executors.Dequeue();
-				if (!await rem.TrySetResultAsync(order))
-					await InnerPlaceItem(order);
+				var rem = _receivers.Dequeue();
+				if (!await rem.TrySetResultAsync(item))
+					await InnerPlaceItem(item);
 			}
 			else
-				_queue.Enqueue(order);
+				_queue.Enqueue(item);
 		}
 
-		public async Task PlaceItem(T order)
+		/// <summary>
+		/// Place an item. If there are any receivers, hand it to them. If there aren't, place to
+		/// the queue.
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public async Task PlaceItem(T item)
 		{
 			await using var _ = await _lock.BlockAsyncLock();
-			await InnerPlaceItem(order);
+			await InnerPlaceItem(item);
 		}
 
+		/// <summary>
+		/// Is there any items in the item queue
+		/// </summary>
+		/// <returns></returns>
 		public async Task<bool> AnyItems()
 		{
 			await using var _ = await _lock.BlockAsyncLock();
 			return _queue.Any();
+		}
+
+		/// <summary>
+		/// Is there any receivers in the receiver queue
+		/// </summary>
+		/// <returns></returns>
+		public async Task<bool> AnyReceiverss()
+		{
+			await using var _ = await _lock.BlockAsyncLock();
+			return _receivers.Any();
 		}
 
 		private async Task<Task<T>> InnerGetItem(CancellationToken token = default)
@@ -59,21 +79,26 @@
 
 		private async Task<T> Enquer(CancellationToken token)
 		{
-			var relay = new MyTaskSource<T>(token);
-			_executors.Enqueue(relay);
+			var itemReceiver = new MyTaskSource<T>(token);
+			_receivers.Enqueue(itemReceiver);
 
-			return await relay.MyTask;
+			return await itemReceiver.MyTask;
 		}
 
-		public async Task<Task<T>> GetItem(CancellationToken token = default)
+		/// <summary>
+		/// Get item. If there is any, return it immediately, if not, take a place in the queue.
+		/// </summary>
+		/// <param name="token">Cancellation token</param>
+		/// <returns>Task representing overall procedure of retrieving the item</returns>
+		public async Task<T> GetItem(CancellationToken token = default)
 		{
-			Task<T> orderGet = null;
+			var itemGet = Task.FromResult<T>(default);
 			await using (var _ = await _lock.BlockAsyncLock())
 			{
-				orderGet = await InnerGetItem(token);
+				itemGet = await InnerGetItem(token);
 			}
 
-			return orderGet;
+			return await itemGet;
 		}
 	}
 }

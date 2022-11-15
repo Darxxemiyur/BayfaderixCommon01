@@ -33,14 +33,14 @@
 
 		public async Task UntilPlaced(CancellationToken token = default)
 		{
-			Task task = Task.CompletedTask;
+			var task = Task.CompletedTask;
 			{
 				await using var _ = await _lock.BlockAsyncLock();
 				task = _cranck.MyTask;
 			}
-			var relay = new MyRelayTask(task, token);
+			var cancellableAwaiting = new MyRelayTask(task, token);
 
-			await relay.TheTask;
+			await cancellableAwaiting.TheTask;
 		}
 
 		/// <summary>

@@ -86,9 +86,8 @@
 	}
 
 	/// <summary>
-	/// First in First out fetch blocking Async Collection FIFOACollection
+	/// FIFO Fetch Blocking Async Collection | FIFOFBACollection
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
 	public class FIFOFBACollection : IDisposable
 	{
 		public FIFOFBACollection()
