@@ -216,25 +216,24 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			var token = _token;
 			try
 			{
-				while (true)
+				while (!token.IsCancellationRequested)
 				{
-					//Wait for any task to complete in the list;
+					//Wait for any task to complete in the list
 					var completedTask = await Task.WhenAny(_executingTasks.Append(_toExecuteTasks.UntilPlaced(token)).ToArray()) as Task<Exception?>;
-					if (completedTask != null)
-					{
-						//Handle the removal of completed tasks yielded from awaiting for any
-						var result = await completedTask;
-						//Forward all exceptions to the stderr-ish
-						if (result != null)
-							await AddNew(await _errorHandler(this, result));
-
-						//Returns false if it tries to remove 'timeout' task, and true if succeeds
-						_executingTasks.Remove(completedTask);
-					}
-					else
+					if (completedTask == null)
 					{
 						_executingTasks.AddRange((await _toExecuteTasks.GetAll()).Select(SafeHandler));
+						continue;
 					}
+
+					//Handle the removal of completed tasks yielded from awaiting for any
+					var result = await completedTask;
+					//Forward all exceptions to the stderr-ish
+					if (result != null)
+						await AddNew(await _errorHandler(this, result));
+
+					//Returns false if it tries to remove 'timeout' task, and true if succeeds
+					_executingTasks.Remove(completedTask);
 				}
 			}
 			catch (Exception)
@@ -246,6 +245,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		public async Task RunRunnable()
 		{
+			//Implies _workerThread is not null
 			if (_runsInWorkerThread)
 				_workerThread.Start();
 			else

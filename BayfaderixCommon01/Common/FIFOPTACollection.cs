@@ -7,12 +7,12 @@
 	{
 		private readonly AsyncLocker _lock;
 		private readonly Queue<T> _queue;
-		private MyTaskSource _cranck;
+		private MyTaskSource _crank;
 
 		public FIFOPTACollection()
 		{
 			_lock = new();
-			_cranck = new();
+			_crank = new();
 			_queue = new();
 		}
 
@@ -20,7 +20,7 @@
 		{
 			await using var _ = await _lock.BlockAsyncLock();
 			_queue.Enqueue(item);
-			await _cranck.TrySetResultAsync();
+			await _crank.TrySetResultAsync();
 		}
 
 		public async Task Place(IEnumerable<T> items)
@@ -28,16 +28,21 @@
 			await using var _ = await _lock.BlockAsyncLock();
 			foreach (var item in items)
 				_queue.Enqueue(item);
-			await _cranck.TrySetResultAsync();
+			await _crank.TrySetResultAsync();
 		}
 
+		/// <summary>
+		/// Completes when anything has been placed.
+		/// </summary>
+		/// <param name="token"></param>
+		/// <returns></returns>
 		public async Task UntilPlaced(CancellationToken token = default)
 		{
 			var task = Task.CompletedTask;
-			{
-				await using var _ = await _lock.BlockAsyncLock();
-				task = _cranck.MyTask;
-			}
+
+			await using (var _ = await _lock.BlockAsyncLock())
+				task = _crank.MyTask;
+
 			var cancellableAwaiting = new MyRelayTask(task, token);
 
 			await cancellableAwaiting.TheTask;
@@ -62,7 +67,7 @@
 			while (_queue.Count > 0)
 				outQueue.Add(_queue.Dequeue());
 
-			_cranck = new();
+			_crank = new();
 			return outQueue;
 		}
 	}

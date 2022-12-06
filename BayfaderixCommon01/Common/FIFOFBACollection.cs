@@ -26,7 +26,7 @@
 			await using var _ = await _sync.BlockAsyncLock();
 
 			if (_generator.MyTask.IsCanceled)
-				throw new TaskCanceledException();
+				await _generator.MyTask;
 
 			await _generator.TrySetResultAsync(stuff);
 			_chain.Enqueue((_generator = new()).MyTask);
@@ -41,8 +41,9 @@
 		public async Task<T> GetData(CancellationToken token = default)
 		{
 			Task<T> result = null;
+
+			await using (var _ = await _sync.BlockAsyncLock())
 			{
-				await using var _ = await _sync.BlockAsyncLock();
 				result = _prepin.Count > 0 ? _prepin.Pop() : _chain.Dequeue();
 			}
 
@@ -64,16 +65,16 @@
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					_generator.Dispose();
-					_sync.Dispose();
-				}
+			if (disposedValue)
+				return;
 
-				disposedValue = true;
+			if (disposing)
+			{
+				_generator.Dispose();
+				_sync.Dispose();
 			}
+
+			disposedValue = true;
 		}
 
 		public void Dispose()
@@ -90,10 +91,7 @@
 	/// </summary>
 	public class FIFOFBACollection : IDisposable
 	{
-		public FIFOFBACollection()
-		{
-			_facade = new();
-		}
+		public FIFOFBACollection() => _facade = new();
 
 		private FIFOFBACollection<bool> _facade;
 
@@ -109,15 +107,13 @@
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					((IDisposable)_facade).Dispose();
-				}
+			if (disposedValue)
+				return;
 
-				disposedValue = true;
-			}
+			if (disposing)
+				((IDisposable)_facade).Dispose();
+
+			disposedValue = true;
 		}
 
 		public void Dispose()

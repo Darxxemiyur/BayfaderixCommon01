@@ -66,10 +66,9 @@
 
 		private async Task<T> Encapsulate()
 		{
-			{
-				await using var _ = await _lock.BlockAsyncLock();
+			await using (var _ = await _lock.BlockAsyncLock())
 				_innerWork ??= SecureThingy();
-			}
+
 			return await _innerWork;
 		}
 

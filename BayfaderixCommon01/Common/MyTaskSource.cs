@@ -43,6 +43,10 @@
 		}
 	}
 
+	/// <summary>
+	/// Task source wrapper.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	public class MyTaskSource<T> : IDisposable
 	{
 		private readonly TaskCompletionSource<T> _source;
@@ -110,9 +114,15 @@
 			if (!_inner.IsCancellationRequested)
 				_cancel.Cancel();
 
+			_source.TrySetCanceled(_inner);
 			return _inner.IsCancellationRequested;
 		}
 
+		/// <summary>
+		/// Tries to set result. True if success, False if failure. Will fail if was cancelled.
+		/// </summary>
+		/// <param name="result"></param>
+		/// <returns></returns>
 		public async Task<bool> TrySetResultAsync(T result)
 		{
 			await using var _ = await _lock.BlockAsyncLock();
@@ -134,21 +144,23 @@
 			if (!_inner.IsCancellationRequested)
 				_cancel.Cancel();
 
+			await Task.Run(() => _source.TrySetCanceled(_inner));
+
 			return _inner.IsCancellationRequested;
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					_lock.Dispose();
-					_cancel.Dispose();
-				}
+			if (disposedValue)
+				return;
 
-				disposedValue = true;
+			if (disposing)
+			{
+				_lock.Dispose();
+				_cancel.Dispose();
 			}
+
+			disposedValue = true;
 		}
 
 		public void Dispose()

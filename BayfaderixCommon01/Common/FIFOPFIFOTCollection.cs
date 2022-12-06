@@ -18,14 +18,15 @@
 
 		private async Task InnerPlaceItem(T item)
 		{
-			if (_receivers.Count > 0)
+			if (_receivers.Count <= 0)
 			{
-				var rem = _receivers.Dequeue();
-				if (!await rem.TrySetResultAsync(item))
-					await InnerPlaceItem(item);
-			}
-			else
 				_queue.Enqueue(item);
+				return;
+			}
+
+			var rem = _receivers.Dequeue();
+			if (!await rem.TrySetResultAsync(item))
+				await InnerPlaceItem(item);
 		}
 
 		/// <summary>
@@ -62,19 +63,17 @@
 
 		private async Task<Task<T>> InnerGetItem(CancellationToken token = default)
 		{
-			if (_queue.Count > 0)
-			{
-				var item = _queue.Dequeue();
-				if (token.IsCancellationRequested)
-				{
-					_queue.Enqueue(item);
-					await Task.FromCanceled(token);
-				}
-				else
-					return item == null ? await InnerGetItem(token) : Task.FromResult(item);
-			}
+			if (_queue.Count <= 0)
+				return Enquer(token);
 
-			return Enquer(token);
+			var item = _queue.Dequeue();
+
+			if (!token.IsCancellationRequested)
+				return item == null ? await InnerGetItem(token) : Task.FromResult(item);
+
+			_queue.Enqueue(item);
+
+			return Task.FromCanceled<T>(token);
 		}
 
 		private async Task<T> Enquer(CancellationToken token)
@@ -94,9 +93,7 @@
 		{
 			var itemGet = Task.FromResult<T>(default);
 			await using (var _ = await _lock.BlockAsyncLock())
-			{
 				itemGet = await InnerGetItem(token);
-			}
 
 			return await itemGet;
 		}
