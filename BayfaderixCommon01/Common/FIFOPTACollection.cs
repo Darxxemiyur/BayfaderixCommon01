@@ -38,14 +38,12 @@
 		/// <returns></returns>
 		public async Task UntilPlaced(CancellationToken token = default)
 		{
-			var task = Task.CompletedTask;
+			Task task;
 
 			await using (var _ = await _lock.BlockAsyncLock())
 				task = _crank.MyTask;
 
-			var cancellableAwaiting = new MyRelayTask(task, token);
-
-			await cancellableAwaiting.TheTask;
+			await task.RelayAsync(token);
 		}
 
 		/// <summary>
@@ -67,6 +65,7 @@
 			while (_queue.Count > 0)
 				outQueue.Add(_queue.Dequeue());
 
+			await _crank.TrySetCanceledAsync();
 			_crank = new();
 			return outQueue;
 		}
