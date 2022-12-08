@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-
-namespace Name.Bayfaderix.Darxxemiyur.Common
+﻿namespace Name.Bayfaderix.Darxxemiyur.Common
 {
 	/// <summary>
 	/// Acts as a relay that allows to stop awaiting of non-cancellable task, almost seamlessly.
