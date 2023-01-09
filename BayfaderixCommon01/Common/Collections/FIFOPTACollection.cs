@@ -6,7 +6,7 @@
 	public class FIFOPTACollection<T>
 	{
 		private readonly AsyncLocker _lock;
-		private readonly Queue<T> _queue;
+		private readonly LinkedList<T> _queue;
 		private MyTaskSource _crank;
 
 		public FIFOPTACollection()
@@ -16,18 +16,53 @@
 			_queue = new();
 		}
 
-		public async Task Place(T item)
+		/// <summary>
+		/// Appends item to the list
+		/// </summary>
+		/// <param name="items"></param>
+		/// <returns></returns>
+		public async Task PlaceLast(T item)
 		{
 			await using var _ = await _lock.BlockAsyncLock();
-			_queue.Enqueue(item);
+			_queue.AddLast(item);
 			await _crank.TrySetResultAsync();
 		}
 
-		public async Task Place(IEnumerable<T> items)
+		/// <summary>
+		/// Appends items to the list
+		/// </summary>
+		/// <param name="items"></param>
+		/// <returns></returns>
+		public async Task PlaceLast(IEnumerable<T> items)
 		{
 			await using var _ = await _lock.BlockAsyncLock();
 			foreach (var item in items)
-				_queue.Enqueue(item);
+				_queue.AddLast(item);
+			await _crank.TrySetResultAsync();
+		}
+
+		/// <summary>
+		/// Prepends item to the list
+		/// </summary>
+		/// <param name="items"></param>
+		/// <returns></returns>
+		public async Task PlaceFirst(T item)
+		{
+			await using var _ = await _lock.BlockAsyncLock();
+			_queue.AddFirst(item);
+			await _crank.TrySetResultAsync();
+		}
+
+		/// <summary>
+		/// Prepends items to the list
+		/// </summary>
+		/// <param name="items"></param>
+		/// <returns></returns>
+		public async Task PlaceFirst(IEnumerable<T> items)
+		{
+			await using var _ = await _lock.BlockAsyncLock();
+			foreach (var item in items.Reverse())
+				_queue.AddFirst(item);
 			await _crank.TrySetResultAsync();
 		}
 
@@ -57,15 +92,22 @@
 			return await GetAll();
 		}
 
+		/// <summary>
+		/// Gets all stored items at once.
+		/// </summary>
+		/// <returns></returns>
 		public async Task<IEnumerable<T>> GetAll()
 		{
 			await using var _ = await _lock.BlockAsyncLock();
-			var outQueue = new List<T>();
+			var outQueue = new List<T>(_queue.Count);
 
 			while (_queue.Count > 0)
-				outQueue.Add(_queue.Dequeue());
-
-			await _crank.TrySetCanceledAsync();
+			{
+				var node = _queue.First;
+				outQueue.Add(node.Value);
+				_queue.Remove(node);
+			}
+			await _crank.TrySetResultAsync();
 			_crank = new();
 			return outQueue;
 		}

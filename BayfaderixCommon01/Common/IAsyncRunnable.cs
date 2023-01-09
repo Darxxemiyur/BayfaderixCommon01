@@ -10,6 +10,6 @@
 		/// Starts the runnable(a long-term task)
 		/// </summary>
 		/// <returns></returns>
-		Task RunRunnable();
+		Task RunRunnable(CancellationToken token = default);
 	}
 }

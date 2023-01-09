@@ -36,7 +36,7 @@
 	//Soon [Obsolete("Use .WaitAsync() instead.")]
 	public class MyRelayTask<T>
 	{
-		private readonly MyTaskSource<T> _inner;
+		private readonly MyTaskSource _inner;
 		private Task<T> _innerWork;
 		private readonly Func<Task<T>> _callable;
 		private readonly AsyncLocker _lock;
@@ -80,29 +80,19 @@
 
 			var either = await Task.WhenAny(task, _inner.MyTask);
 
-			await _inner.TrySetCanceledAsync();
+			try
+			{
+				if (either == task)
+					await _inner.TrySetResultAsync();
+				else
+					await _inner.MyTask;
 
-			return await (either == task ? task : _inner.MyTask);
-		}
-	}
-
-	public static class MyRelayTaskExtension
-	{
-		public static Task RelayAsync(this Task me, CancellationToken token) => new MyRelayTask(me, token).TheTask;
-		public static async Task RelayAsync(this Task me, TimeSpan timeout, CancellationToken token = default)
-		{
-			using var ttokenS = new CancellationTokenSource(timeout);
-			using var rtokenS = CancellationTokenSource.CreateLinkedTokenSource(token, ttokenS.Token);
-
-			await me.RelayAsync(rtokenS.Token);
-		}
-		public static Task<T> RelayAsync<T>(this Task<T> me, CancellationToken token) => new MyRelayTask<T>(me, token).TheTask;
-		public static async Task<T> RelayAsync<T>(this Task<T> me, TimeSpan timeout, CancellationToken token = default)
-		{
-			using var ttokenS = new CancellationTokenSource(timeout);
-			using var rtokenS = CancellationTokenSource.CreateLinkedTokenSource(token, ttokenS.Token);
-
-			return await me.RelayAsync(rtokenS.Token);
+				return await task;
+			}
+			catch (TaskCanceledException e)
+			{
+				throw new MyRelayTaskException(e);
+			}
 		}
 	}
 }

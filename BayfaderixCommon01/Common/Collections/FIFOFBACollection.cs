@@ -10,13 +10,11 @@
 		{
 			_sync = new();
 			_chain = new();
-			_prepin = new();
-			_chain.Enqueue((_generator = new()).MyTask);
+			_chain.AddFirst((_generator = new()).MyTask);
 		}
 
 		private MyTaskSource<T> _generator;
-		private readonly Queue<Task<T>> _chain;
-		private readonly Stack<Task<T>> _prepin;
+		private readonly LinkedList<Task<T>> _chain;
 		private readonly AsyncLocker _sync;
 
 		public Task<bool> HasAny() => Task.FromResult(_chain.Any(x => x.IsCompleted));
@@ -29,7 +27,7 @@
 				await _generator.MyTask;
 
 			await _generator.TrySetResultAsync(stuff);
-			_chain.Enqueue((_generator = new()).MyTask);
+			_chain.AddLast((_generator = new()).MyTask);
 		}
 
 		public async Task Cancel()
@@ -44,7 +42,9 @@
 
 			await using (var _ = await _sync.BlockAsyncLock())
 			{
-				result = _prepin.Count > 0 ? _prepin.Pop() : _chain.Dequeue();
+				var node = _chain.First;
+				result = node.Value;
+				_chain.Remove(node);
 			}
 
 			using var revert = new MyTaskSource<T>(token);
@@ -54,7 +54,7 @@
 			if (either == revert.MyTask)
 			{
 				await using var _ = await _sync.BlockAsyncLock();
-				_prepin.Push(result);
+				_chain.AddFirst(result);
 				await revert.MyTask;
 			}
 
