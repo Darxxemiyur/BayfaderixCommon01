@@ -149,7 +149,6 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 					var node = await completedTask;
 					var result = await node.Value;
 
-					//Returns false if it tries to remove 'timeout' task, and true if succeeds
 					_executingTasks.Remove(node);
 
 					if (result != null && !await _errorHandler(this, result))

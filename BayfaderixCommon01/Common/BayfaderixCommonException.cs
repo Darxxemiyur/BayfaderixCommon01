@@ -7,7 +7,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		protected static string HideSecretStackTrace(string stackTrace, Func<string, bool> toHide) => //San(
 			string.Join(Environment.NewLine, (stackTrace ?? "").Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
 			//.Select(x => toHide(x) ? $"{x}\n^^^Will Hide!^^^" : x)
-			.Where(x => !(toHide(x) || x.Contains($"{nameof(BayfaderixCommonException)}.{nameof(HideSecretStackTrace)}")))
+			.Where(x => true || !(toHide(x) && !x.Contains($"{nameof(BayfaderixCommonException)}.{nameof(HideSecretStackTrace)}")))
 			);
 
 		//, "^^^Will Hide!^^^");

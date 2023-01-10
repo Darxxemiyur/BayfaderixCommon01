@@ -5,7 +5,7 @@
 		private readonly MyTaskSource<bool> _facade;
 		private bool disposedValue;
 
-		public MyTaskSource(CancellationToken token = default) => _facade = new(token);
+		public MyTaskSource(CancellationToken token = default, bool throwOnException = false) => _facade = new(token, throwOnException);
 
 		public Task MyTask => _facade.MyTask;
 
@@ -53,11 +53,13 @@
 		private readonly AsyncLocker _lock;
 		private readonly CancellationTokenSource _cancel;
 		private readonly CancellationToken _inner;
+		private readonly bool _throwOnException;
 
-		public MyTaskSource(CancellationToken token = default)
+		public MyTaskSource(CancellationToken token = default, bool throwOnException = false)
 		{
 			_lock = new();
 			_source = new();
+			_throwOnException = throwOnException;
 			_cancel = new CancellationTokenSource();
 			_inner = CancellationTokenSource.CreateLinkedTokenSource(token, _cancel.Token).Token;
 		}
@@ -89,6 +91,10 @@
 			if (result.Item1)
 				return (T)result.Item2;
 
+			//Do a very very bad thing if we don't want exceptions
+			if (!_throwOnException)
+				return default;
+
 			//Else throw exception.
 			throw new MyTaskSourceException((Exception)result.Item2);
 		}
@@ -104,7 +110,7 @@
 		{
 			using var _ = _lock.BlockLock();
 
-			return !_inner.IsCancellationRequested && _source.TrySetResult((false, result));
+			return !_inner.IsCancellationRequested && _source.TrySetResult((false, _throwOnException ? result : null));
 		}
 
 		public bool TrySetCanceled()
@@ -114,7 +120,7 @@
 			if (!_inner.IsCancellationRequested)
 				_cancel.Cancel();
 
-			return _inner.IsCancellationRequested && _source.TrySetResult((false, new TaskCanceledException(null, null, _inner)));
+			return _inner.IsCancellationRequested && _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null));
 		}
 
 		/// <summary>
@@ -133,7 +139,7 @@
 		{
 			await using var _ = await _lock.BlockAsyncLock();
 
-			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, result)));
+			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? result : null)));
 		}
 
 		public async Task<bool> TrySetCanceledAsync()
@@ -147,7 +153,7 @@
 			if (!_inner.IsCancellationRequested)
 				await Task.Run(_cancel.Cancel);
 
-			return _inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, new TaskCanceledException(null, null, _inner))));
+			return _inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null)));
 		}
 
 		protected virtual void Dispose(bool disposing)
