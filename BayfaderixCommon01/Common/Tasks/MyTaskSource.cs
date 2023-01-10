@@ -5,7 +5,7 @@
 		private readonly MyTaskSource<bool> _facade;
 		private bool disposedValue;
 
-		public MyTaskSource(CancellationToken token = default, bool throwOnException = false) => _facade = new(token, throwOnException);
+		public MyTaskSource(CancellationToken token = default, bool throwOnException = true) => _facade = new(token, throwOnException);
 
 		public Task MyTask => _facade.MyTask;
 
@@ -55,7 +55,7 @@
 		private readonly CancellationToken _inner;
 		private readonly bool _throwOnException;
 
-		public MyTaskSource(CancellationToken token = default, bool throwOnException = false)
+		public MyTaskSource(CancellationToken token = default, bool throwOnException = true)
 		{
 			_lock = new();
 			_source = new();

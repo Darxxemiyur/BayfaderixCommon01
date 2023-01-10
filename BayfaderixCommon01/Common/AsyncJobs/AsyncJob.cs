@@ -4,6 +4,9 @@
 	/// The unit of job. Start other jobs from here, do async await work in here, do whatever you
 	/// want, it's up to you.
 	/// </summary>
+	//TODO: Make task creation using this https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskfactory?view=net-7.0
+	//TODO: AsyncJob looses shape, so it must be reconsidered
+	//TODO: CHECK AsyncJobManager
 	public class AsyncJob
 	{
 		private readonly MyTaskSource<object> _resulter;
@@ -14,6 +17,7 @@
 
 		private readonly Func<CancellationToken, Task<object>> _invoke;
 		private readonly CancellationToken _token;
+		public CancellationToken Token => _token;
 
 		/// <summary>
 		/// Just because handy
