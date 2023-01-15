@@ -1,4 +1,6 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Common
+﻿using Name.Bayfaderix.Darxxemiyur.Common.Extensions;
+
+namespace Name.Bayfaderix.Darxxemiyur.Common
 {
 	/// <summary>
 	/// The unit of job. Start other jobs from here, do async await work in here, do whatever you
@@ -88,5 +90,20 @@
 				throw exc;
 			}
 		}
+	}
+
+	public class AsyncJob<TResult> : AsyncJob where TResult : class
+	{
+		public new Task<TResult?> DataResult => base.DataResult.AsType<object, TResult>();
+
+		/// <summary>
+		/// Cancellation tokens will be delivered to the supplied task.
+		/// </summary>
+		public AsyncJob(Func<CancellationToken, Task<TResult>> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : base(async (x) => await work(x), jobType, token) { }
+
+		/// <summary>
+		/// Cancellation tokens will be delivered to the supplied task.
+		/// </summary>
+		public AsyncJob(Func<Task<TResult>> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : base(async (x) => await work(), jobType, token) { }
 	}
 }

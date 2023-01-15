@@ -86,47 +86,42 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			try
 			{
-				Task toAwait = Task.CompletedTask;
-				await using (var _ = await _lock.BlockAsyncLock())
+				// Place task in thread pool
+				if (job.JobType == AsyncJobType.Pooled)
+					await Task.Run(() => job.Launch(_token), job.Token);
+
+				//Explicit external thread for each task.
+				if (job.JobType == AsyncJobType.UniqueThreaded)
 				{
-					// Place task in thread pool
-					if (job.JobType == AsyncJobType.Pooled)
-						toAwait = Task.Run(() => job.Launch(_token));
+					var relay = new MyTaskSource();
+					new Thread(() => AsyncContext.Run(async () => {
+						try
+						{
+							await job.Launch(_token);
+							await relay.TrySetResultAsync();
+						}
+						catch (Exception e)
+						{
+							await relay.TrySetExceptionAsync(e);
+						}
+					})).Start();
+					await relay.MyTask;
+				}
 
-					//Explicit external thread for each task.
-					if (job.JobType == AsyncJobType.UniqueThreaded)
-					{
-						var relay = new MyTaskSource();
-						new Thread(() => AsyncContext.Run(async () => {
-							try
-							{
-								await job.Launch(_token);
-								await relay.TrySetResultAsync();
-							}
-							catch (Exception e)
-							{
-								await relay.TrySetExceptionAsync(e);
-							}
-						})).Start();
-						toAwait = relay.MyTask;
-					}
-
-					// Run in subthread of this job manager
-					if (job.JobType == AsyncJobType.SubThreaded)
-					{
+				// Run in subthread of this job manager
+				if (job.JobType == AsyncJobType.SubThreaded)
+				{
+					await using (var _ = await _lock.BlockAsyncLock())
 						if (_workerThreadRunner == null)
 							await AddNew(new AsyncJob(_workerThreadRunner = new AsyncJobManager(true, _errorHandler, _token), AsyncJobType.UniqueThreaded, _token));
 
-						//Yes, job to launch a job. Cry about it.
-						toAwait = (await _workerThreadRunner.AddNew(new AsyncJob(() => job.Launch(_token)))).Result;
-					}
-
-					//Run in the same thread as this job manager.
-					if (job.JobType == AsyncJobType.Inline)
-						toAwait = job.Launch(_token);
+					//Yes, job to launch a job. Cry about it.
+					await (await _workerThreadRunner.AddNew(new AsyncJob(() => job.Launch(_token)))).Result;
 				}
 
-				await toAwait;
+				//Run in the same thread and task scheduler.
+				if (job.JobType == AsyncJobType.Inline)
+					await job.Launch(_token);
 			}
 			catch (Exception e)
 			{
