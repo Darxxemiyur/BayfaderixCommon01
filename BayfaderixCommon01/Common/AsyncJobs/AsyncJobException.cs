@@ -12,7 +12,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		}
 
 		/// <inheritdoc/>
-		public AsyncJobException(Exception? innerException) : base(innerException.Message, innerException)
+		public AsyncJobException(Exception? innerException) : base(innerException?.Message, innerException)
 		{
 		}
 

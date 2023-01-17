@@ -12,7 +12,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		}
 
 		/// <inheritdoc/>
-		public MyRelayTaskException(Exception? innerException) : base(innerException.Message, innerException)
+		public MyRelayTaskException(Exception? innerException) : base(innerException?.Message, innerException)
 		{
 		}
 
