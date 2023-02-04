@@ -25,8 +25,8 @@
 			}
 
 			var rem = _receivers.Dequeue();
-			if (!await rem.TrySetResultAsync(item))
-				await InnerPlaceItem(item);
+			if (!await rem.TrySetResultAsync(item).ConfigureAwait(false))
+				await InnerPlaceItem(item).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -37,8 +37,8 @@
 		/// <returns></returns>
 		public async Task PlaceItem(T item)
 		{
-			await using var _ = await _lock.BlockAsyncLock();
-			await InnerPlaceItem(item);
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await InnerPlaceItem(item).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -47,7 +47,7 @@
 		/// <returns></returns>
 		public async Task<bool> AnyItems()
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			return _queue.Any();
 		}
 
@@ -57,7 +57,7 @@
 		/// <returns></returns>
 		public async Task<bool> AnyReceiverss()
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			return _receivers.Any();
 		}
 
@@ -69,7 +69,7 @@
 			var item = _queue.Dequeue();
 
 			if (!token.IsCancellationRequested)
-				return item == null ? await InnerGetItem(token) : Task.FromResult(item);
+				return item == null ? await InnerGetItem(token).ConfigureAwait(false) : Task.FromResult(item);
 
 			_queue.Enqueue(item);
 
@@ -81,7 +81,7 @@
 			var itemReceiver = new MyTaskSource<T>(token);
 			_receivers.Enqueue(itemReceiver);
 
-			return await itemReceiver.MyTask;
+			return await itemReceiver.MyTask.ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -92,8 +92,8 @@
 		public async Task<T> GetItem(CancellationToken token = default)
 		{
 			var itemGet = Task.FromResult<T>(default);
-			await using (var _ = await _lock.BlockAsyncLock())
-				itemGet = await InnerGetItem(token);
+			await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
+				itemGet = await InnerGetItem(token).ConfigureAwait(false);
 
 			return await itemGet;
 		}

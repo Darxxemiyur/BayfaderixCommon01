@@ -21,19 +21,19 @@
 
 		public async Task SetValue(T value)
 		{
-			await using var _ = await _sync.BlockAsyncLock();
+			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
 			_value = value;
 		}
 
 		public async Task SetValue(Func<T, Task<T>> value)
 		{
-			await using var _ = await _sync.BlockAsyncLock();
-			_value = await value(_value);
+			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
+			_value = await value(_value).ConfigureAwait(false);
 		}
 
 		public async Task<T> GetValue()
 		{
-			await using var _ = await _sync.BlockAsyncLock();
+			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
 			var val = _value;
 
 			return val;
@@ -41,8 +41,8 @@
 
 		public async Task<T> LocklyModValue(Func<T, Task<T>> value)
 		{
-			await using var _ = await _sync.BlockAsyncLock();
-			return _value = await value(_value);
+			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
+			return _value = await value(_value).ConfigureAwait(false);
 		}
 
 		public static implicit operator T(AsyncSafeVariable<T> val) => val._value;

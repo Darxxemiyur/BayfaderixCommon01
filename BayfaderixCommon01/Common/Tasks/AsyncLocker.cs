@@ -9,6 +9,7 @@
 		private readonly SemaphoreSlim _lock;
 
 		public AsyncLocker() => _lock = new(1, 1);
+		//~AsyncLocker() => Console.WriteLine($"Died-{GetType().Name}");
 
 		public Task AsyncLock(CancellationToken token = default) => _lock.WaitAsync(token);
 
@@ -20,7 +21,7 @@
 
 		public async Task<BlockAsyncLock> BlockAsyncLock(CancellationToken token = default)
 		{
-			await AsyncLock(token);
+			await AsyncLock(token).ConfigureAwait(false);
 			return new BlockAsyncLock(this);
 		}
 

@@ -23,9 +23,9 @@
 		/// <returns></returns>
 		public async Task PlaceLast(T item)
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			_queue.AddLast(item);
-			await _crank.TrySetResultAsync();
+			await _crank.TrySetResultAsync().ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -35,10 +35,10 @@
 		/// <returns></returns>
 		public async Task PlaceLast(IEnumerable<T> items)
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			foreach (var item in items)
 				_queue.AddLast(item);
-			await _crank.TrySetResultAsync();
+			await _crank.TrySetResultAsync().ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -48,9 +48,9 @@
 		/// <returns></returns>
 		public async Task PlaceFirst(T item)
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			_queue.AddFirst(item);
-			await _crank.TrySetResultAsync();
+			await _crank.TrySetResultAsync().ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -60,10 +60,10 @@
 		/// <returns></returns>
 		public async Task PlaceFirst(IEnumerable<T> items)
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			foreach (var item in items.Reverse())
 				_queue.AddFirst(item);
-			await _crank.TrySetResultAsync();
+			await _crank.TrySetResultAsync().ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -75,10 +75,10 @@
 		{
 			Task task;
 
-			await using (var _ = await _lock.BlockAsyncLock())
+			await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
 				task = _crank.MyTask;
 
-			await task.RelayAsync(token);
+			await task.RelayAsync(token).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -88,8 +88,8 @@
 		/// <returns></returns>
 		public async Task<IEnumerable<T>> GetAllSafe(CancellationToken token = default)
 		{
-			await UntilPlaced(token);
-			return await GetAll();
+			await UntilPlaced(token).ConfigureAwait(false);
+			return await GetAll().ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -98,7 +98,7 @@
 		/// <returns></returns>
 		public async Task<IEnumerable<T>> GetAll()
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			var outQueue = new List<T>(_queue.Count);
 
 			while (_queue.Count > 0)
@@ -107,7 +107,7 @@
 				outQueue.Add(node.Value);
 				_queue.Remove(node);
 			}
-			await _crank.TrySetResultAsync();
+			await _crank.TrySetResultAsync().ConfigureAwait(false);
 			_crank = new();
 			return outQueue;
 		}
