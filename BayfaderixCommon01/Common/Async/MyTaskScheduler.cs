@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 {
-	public sealed class MyTaskScheduler : TaskScheduler
+	internal sealed class MyTaskScheduler : TaskScheduler
 	{
 		private MySynchronizationContext _context;
 		public MyTaskScheduler(MySynchronizationContext context)

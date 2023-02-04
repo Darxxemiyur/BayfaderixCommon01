@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 {
-	public class MySynchronizationContext : SynchronizationContext
+	internal class MySynchronizationContext : SynchronizationContext
 	{
 
 		private readonly Thread _mainThread;
