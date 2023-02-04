@@ -39,7 +39,7 @@
 		public void Dispose()
 		{
 			Dispose(disposing: true);
-			//GC.SuppressFinalize(this);
+			GC.SuppressFinalize(this);
 		}
 	}
 
@@ -169,7 +169,6 @@
 				_cancel.Dispose();
 				_icancel.Dispose();
 			}
-			//Console.WriteLine($"Died-{GetType().Name}");
 			disposedValue = true;
 		}
 
@@ -177,7 +176,7 @@
 		{
 			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
 			Dispose(disposing: true);
-			//GC.SuppressFinalize(this);
+			GC.SuppressFinalize(this);
 		}
 
 		~MyTaskSource() => Dispose(disposing: false);

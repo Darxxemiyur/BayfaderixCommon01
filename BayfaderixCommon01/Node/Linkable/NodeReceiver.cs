@@ -12,8 +12,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable
 		public async Task Link(INodeTranceiver source)
 		{
 			var link = new ItemInstantTransferLink(source, this);
-			await source.Link(link);
-			await Link(link);
+			await source.Link(link).ConfigureAwait(false);
+			await Link(link).ConfigureAwait(false);
 		}
 
 		public Task Link(INodeLink link)
@@ -30,8 +30,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable
 		{
 			if (_inputLinks.Find(x => x.IsThisPair(source, this)) is var link == default)
 				return;
-			await UnLink(link);
-			await source.UnLink(link);
+			await UnLink(link).ConfigureAwait(false);
+			await source.UnLink(link).ConfigureAwait(false);
 		}
 
 		public Task UnLink(INodeLink link) => Task.FromResult(_inputLinks.Remove(link));

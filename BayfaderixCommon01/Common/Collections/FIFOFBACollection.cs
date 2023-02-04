@@ -80,7 +80,7 @@
 		public void Dispose()
 		{
 			Dispose(true);
-			//GC.SuppressFinalize(this);
+			GC.SuppressFinalize(this);
 		}
 
 		~FIFOFBACollection() => Dispose(false);
@@ -119,7 +119,7 @@
 		public void Dispose()
 		{
 			Dispose(true);
-			//GC.SuppressFinalize(this);
+			GC.SuppressFinalize(this);
 		}
 
 		~FIFOFBACollection() => Dispose(false);
