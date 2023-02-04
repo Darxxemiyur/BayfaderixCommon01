@@ -20,7 +20,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// <summary>
 		/// Worker thread runner. Either sub runner, or this exact instance.
 		/// </summary>
-		private AsyncJobManager _workerThreadRunner;
+		private AsyncJobManager? _workerThreadRunner;
 
 		private readonly MyTaskSource _relay;
 		private readonly CancellationToken _token;
@@ -43,7 +43,10 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			if (!runInWorkerThread)
 				return;
 
-			_workerThread = new(() => AsyncContext.Run(MyWorker));
+			_workerThread = new(x => AsyncContext.Run((Func<Task>)x)) {
+				IsBackground = true
+			};
+			_workerThread.Priority = ThreadPriority.BelowNormal;
 			_workerThreadRunner = this;
 		}
 
@@ -53,7 +56,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// </summary>
 		/// <param name="runners"></param>
 		/// <returns></returns>
-		public async Task<AsyncJob> AddNew(AsyncJob job) => (await AddNew(new[] { job })).First();
+		public async Task<AsyncJob> AddNew(AsyncJob job) => (await AddNew(new[] { job }).ConfigureAwait(false)).First();
 
 		/// <summary>
 		/// Returns a list of tasks that represent process of passed tasks, which on completion will
@@ -72,7 +75,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		public async Task<IEnumerable<AsyncJob>> AddNew(IEnumerable<AsyncJob> runners)
 		{
 			var created = runners.ToLinkedList();
-			await _toExecuteTasks.PlaceLast(created);
+			await _toExecuteTasks.PlaceLast(created).ConfigureAwait(false);
 
 			return created;
 		}
@@ -88,7 +91,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			{
 				// Place task in thread pool
 				if (job.JobType == AsyncJobType.Pooled)
-					await Task.Run(() => job.Launch(_token), job.Token);
+					await Task.Run(() => job.Launch(_token), job.Token).ConfigureAwait(false);
 
 				//Explicit external thread for each task.
 				if (job.JobType == AsyncJobType.UniqueThreaded)
@@ -97,31 +100,33 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 					new Thread(() => AsyncContext.Run(async () => {
 						try
 						{
-							await job.Launch(_token);
-							await relay.TrySetResultAsync();
+							await job.Launch(_token).ConfigureAwait(false);
+							await relay.TrySetResultAsync().ConfigureAwait(false);
 						}
 						catch (Exception e)
 						{
-							await relay.TrySetExceptionAsync(e);
+							await relay.TrySetExceptionAsync(e).ConfigureAwait(false);
 						}
-					})).Start();
-					await relay.MyTask;
+					})) {
+						IsBackground = !true
+					}.Start();
+					await relay.MyTask.ConfigureAwait(false);
 				}
 
 				// Run in subthread of this job manager
 				if (job.JobType == AsyncJobType.SubThreaded)
 				{
-					await using (var _ = await _lock.BlockAsyncLock())
+					await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
 						if (_workerThreadRunner == null)
-							await AddNew(new AsyncJob(_workerThreadRunner = new AsyncJobManager(true, _errorHandler, _token), AsyncJobType.UniqueThreaded, _token));
+							await AddNew(new AsyncJob(_workerThreadRunner = new AsyncJobManager(true, _errorHandler, _token), AsyncJobType.UniqueThreaded, _token)).ConfigureAwait(false);
 
 					//Yes, job to launch a job. Cry about it.
-					await (await _workerThreadRunner.AddNew(new AsyncJob(() => job.Launch(_token)))).Result;
+					await (await _workerThreadRunner.AddNew(new AsyncJob(() => job.Launch(_token))).ConfigureAwait(false)).Result.ConfigureAwait(false);
 				}
 
 				//Run in the same thread and task scheduler.
 				if (job.JobType == AsyncJobType.Inline)
-					await job.Launch(_token);
+					await job.Launch(_token).ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
@@ -141,29 +146,33 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			{
 				while (!token.IsCancellationRequested)
 				{
+					//Make _executingTasks have a list of Node<Task(the proxy task)>, while the Task would complete once parent task completes, the visible to node task type is generic, and should be upcasted to Task<((Node(the node itself),Task<Exception?>))
+					//HOWEVER THAT IS LIKELY NOT THE CAUSE OF MEMORY LEAK
+					//https://github.com/dotnet/BenchmarkDotNet
+
 					//Wait for any task to complete in the list
-					var completedTask = await Task.WhenAny(_executingTasks.ToMyThingy().Append(_toExecuteTasks.UntilPlaced(token))) as Task<LinkedListNode<Task<Exception?>>>;
+					var completedTask = await Task.WhenAny(_executingTasks.ToMyThingy().Append(_toExecuteTasks.UntilPlaced(token))).ConfigureAwait(false) as Task<LinkedListNode<Task<Exception?>>>;
 					if (completedTask == null)
 					{
-						foreach (var newTask in (await _toExecuteTasks.GetAll()).Select(SafeHandler))
+						foreach (var newTask in (await _toExecuteTasks.GetAll().ConfigureAwait(false)).Select(SafeHandler))
 							_executingTasks.AddLast(newTask);
 
 						continue;
 					}
 					//Handle the removal of completed tasks yielded from awaiting for any
-					var node = await completedTask;
-					var result = await node.Value;
+					var node = await completedTask.ConfigureAwait(false);
+					var result = await node.Value.ConfigureAwait(false);
 
 					_executingTasks.Remove(node);
 
-					if (result != null && !await _errorHandler(this, result))
+					if (result != null && !await _errorHandler(this, result).ConfigureAwait(false))
 						throw new AsyncJobManagerException(result);
 				}
-				await _relay.TrySetResultAsync();
+				await _relay.TrySetResultAsync().ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
-				await _relay.TrySetExceptionAsync(e);
+				await _relay.TrySetExceptionAsync(e).ConfigureAwait(false);
 			}
 		}
 
@@ -171,11 +180,11 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			//Implies _workerThread is not null
 			if (_workerThread != null)
-				_workerThread.Start();
+				_workerThread.Start(MyWorker);
 			else
-				await MyWorker();
+				await MyWorker().ConfigureAwait(false);
 
-			await _relay.MyTask;
+			await _relay.MyTask.ConfigureAwait(false);
 		}
 	}
 }

@@ -28,7 +28,7 @@
 				return;
 
 			_unlocked = true;
-			await _lock.AsyncUnlock();
+			await _lock.AsyncUnlock().ConfigureAwait(false);
 		}
 
 		public void Dispose() => TryToRelease();

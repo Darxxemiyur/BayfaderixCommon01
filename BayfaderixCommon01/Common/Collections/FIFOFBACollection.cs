@@ -21,26 +21,26 @@
 
 		public async Task Handle(T stuff)
 		{
-			await using var _ = await _sync.BlockAsyncLock();
+			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
 
 			if (_generator.MyTask.IsCanceled)
-				await _generator.MyTask;
+				await _generator.MyTask.ConfigureAwait(false);
 
-			await _generator.TrySetResultAsync(stuff);
+			await _generator.TrySetResultAsync(stuff).ConfigureAwait(false);
 			_chain.AddLast((_generator = new()).MyTask);
 		}
 
 		public async Task Cancel()
 		{
-			await using var _ = await _sync.BlockAsyncLock();
-			await _generator.TrySetCanceledAsync();
+			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
+			await _generator.TrySetCanceledAsync().ConfigureAwait(false);
 		}
 
 		public async Task<T> GetData(CancellationToken token = default)
 		{
 			Task<T> result = null;
 
-			await using (var _ = await _sync.BlockAsyncLock())
+			await using (var _ = await _sync.BlockAsyncLock().ConfigureAwait(false))
 			{
 				var node = _chain.First;
 				result = node.Value;
@@ -49,16 +49,16 @@
 
 			using var revert = new MyTaskSource<T>(token);
 
-			var either = await Task.WhenAny(result, revert.MyTask);
+			var either = await Task.WhenAny(result, revert.MyTask).ConfigureAwait(false);
 
 			if (either == revert.MyTask)
 			{
-				await using var _ = await _sync.BlockAsyncLock();
+				await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
 				_chain.AddFirst(result);
-				await revert.MyTask;
+				await revert.MyTask.ConfigureAwait(false);
 			}
 
-			return await either;
+			return await either.ConfigureAwait(false);
 		}
 
 		private bool disposedValue;
@@ -80,7 +80,7 @@
 		public void Dispose()
 		{
 			Dispose(true);
-			GC.SuppressFinalize(this);
+			//GC.SuppressFinalize(this);
 		}
 
 		~FIFOFBACollection() => Dispose(false);
@@ -119,7 +119,7 @@
 		public void Dispose()
 		{
 			Dispose(true);
-			GC.SuppressFinalize(this);
+			//GC.SuppressFinalize(this);
 		}
 
 		~FIFOFBACollection() => Dispose(false);

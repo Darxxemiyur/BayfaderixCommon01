@@ -18,8 +18,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Node.Network
 
 		private static async Task<object> RunNetwork(NextNetworkInstruction inst, NodeResultHandler handler, CancellationToken token = default)
 		{
-			while (await handler(inst, token))
-				inst = await inst.NextStep(new(inst));
+			while (await handler(inst, token).ConfigureAwait(false))
+				inst = await inst.NextStep(new(inst)).ConfigureAwait(false);
 
 			return inst.Payload;
 		}

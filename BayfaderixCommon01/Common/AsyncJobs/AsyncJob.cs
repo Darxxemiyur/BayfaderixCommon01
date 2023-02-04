@@ -9,7 +9,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 	//TODO: Make task creation using this https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskfactory?view=net-7.0
 	//TODO: AsyncJob looses shape, so it must be reconsidered
 	//TODO: CHECK AsyncJobManager
-	public class AsyncJob
+	public class AsyncJob 
 	{
 		private readonly MyTaskSource<object> _resulter;
 		public Task<object> DataResult => _resulter.MyTask;
@@ -21,6 +21,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		private readonly CancellationToken _token;
 		public CancellationToken Token => _token;
 
+		//~AsyncJob() => Console.WriteLine($"Died-{GetType().Name}");
 		/// <summary>
 		/// Just because handy
 		/// </summary>
@@ -31,7 +32,6 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			JobType = jobType;
 			_resulter = new();
 		}
-
 		/// <summary>
 		/// Cancellation tokens will be delivered to the supplied task.
 		/// </summary>
@@ -46,7 +46,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// Cancellation tokens will be delivered to the supplied task.
 		/// </summary>
 		public AsyncJob(Func<CancellationToken, Task> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : this(jobType, token) => _invoke = async (CancellationToken x) => {
-			await work(x);
+			await work(x).ConfigureAwait(false);
 			return false;
 		};
 
@@ -54,7 +54,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// Cancellation tokens will be delivered to the supplied task.
 		/// </summary>
 		public AsyncJob(Func<Task> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : this(jobType, token) => _invoke = async (CancellationToken x) => {
-			await work();
+			await work().ConfigureAwait(false);
 			return false;
 		};
 
@@ -62,8 +62,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// Cancellation tokens will be delivered to the supplied task.
 		/// </summary>
 		public AsyncJob(Func<Task<IAsyncRunnable>> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : this(jobType, token) => _invoke = async (CancellationToken x) => {
-			var runnable = await work();
-			await runnable.RunRunnable(x);
+			var runnable = await work().ConfigureAwait(false);
+			await runnable.RunRunnable(x).ConfigureAwait(false);
 			return false;
 		};
 
@@ -71,7 +71,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// Cancellation tokens will be delivered to the supplied task.
 		/// </summary>
 		public AsyncJob(IAsyncRunnable work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : this(jobType, token) => _invoke = async (CancellationToken x) => {
-			await work.RunRunnable(x);
+			await work.RunRunnable(x).ConfigureAwait(false);
 			return false;
 		};
 
@@ -81,12 +81,12 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			try
 			{
 				var linkekToken = linkedSource.Token;
-				await _resulter.TrySetResultAsync(await _invoke(linkekToken));
+				await _resulter.TrySetResultAsync(await _invoke(linkekToken).ConfigureAwait(false)).ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
 				var exc = new AsyncJobException(e);
-				await _resulter.TrySetExceptionAsync(exc);
+				await _resulter.TrySetExceptionAsync(exc).ConfigureAwait(false);
 				throw exc;
 			}
 		}
@@ -99,11 +99,11 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// <summary>
 		/// Cancellation tokens will be delivered to the supplied task.
 		/// </summary>
-		public AsyncJob(Func<CancellationToken, Task<TResult>> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : base(async (x) => await work(x), jobType, token) { }
+		public AsyncJob(Func<CancellationToken, Task<TResult>> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : base(async (x) => await work(x).ConfigureAwait(false), jobType, token) { }
 
 		/// <summary>
 		/// Cancellation tokens will be delivered to the supplied task.
 		/// </summary>
-		public AsyncJob(Func<Task<TResult>> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : base(async (x) => await work(), jobType, token) { }
+		public AsyncJob(Func<Task<TResult>> work, AsyncJobType jobType = AsyncJobType.Inline, CancellationToken token = default) : base(async (x) => await work().ConfigureAwait(false), jobType, token) { }
 	}
 }

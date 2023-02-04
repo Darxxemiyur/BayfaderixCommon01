@@ -22,7 +22,7 @@
 		/// Delegate that starts the task. Be aware that it starts only after accessing the TheTask property
 		/// </param>
 		/// <param name="token">Cancellation token to cancel the proxy task</param>
-		public MyRelayTask(Func<Task> work, CancellationToken token = default) => _facade = new(async () => { await work(); return false; }, token);
+		public MyRelayTask(Func<Task> work, CancellationToken token = default) => _facade = new(async () => { await work().ConfigureAwait(false); return false; }, token);
 
 		/// <summary>
 		/// The cancellable relay task.
@@ -68,26 +68,26 @@
 
 		private async Task<T> Encapsulate()
 		{
-			await using (var _ = await _lock.BlockAsyncLock())
+			await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
 				_innerWork ??= SecureThingy();
 
-			return await _innerWork;
+			return await _innerWork.ConfigureAwait(false);
 		}
 
 		private async Task<T> SecureThingy()
 		{
 			var task = _callable();
 
-			var either = await Task.WhenAny(task, _inner.MyTask);
+			var either = await Task.WhenAny(task, _inner.MyTask).ConfigureAwait(false);
 
 			try
 			{
 				if (either == task)
-					await _inner.TrySetResultAsync();
+					await _inner.TrySetResultAsync().ConfigureAwait(false);
 				else
-					await _inner.MyTask;
+					await _inner.MyTask.ConfigureAwait(false);
 
-				return await task;
+				return await task.ConfigureAwait(false);
 			}
 			catch (TaskCanceledException e)
 			{

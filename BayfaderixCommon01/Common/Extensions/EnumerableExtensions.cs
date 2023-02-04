@@ -13,7 +13,7 @@
 
 		private static async Task<LinkedListNode<Task<T>>> ToMyThing<T>(LinkedListNode<Task<T>> g)
 		{
-			await g.Value;
+			await g.Value.ConfigureAwait(false);
 			return g;
 		}
 

@@ -39,7 +39,7 @@
 		public void Dispose()
 		{
 			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
+			//GC.SuppressFinalize(this);
 		}
 	}
 
@@ -52,6 +52,7 @@
 		private readonly TaskCompletionSource<(bool, object)> _source;
 		private readonly AsyncLocker _lock;
 		private readonly CancellationTokenSource _cancel;
+		private readonly CancellationTokenSource _icancel;
 		private readonly CancellationToken _inner;
 		private readonly bool _throwOnException;
 
@@ -61,7 +62,8 @@
 			_source = new();
 			_throwOnException = throwOnException;
 			_cancel = new CancellationTokenSource();
-			_inner = CancellationTokenSource.CreateLinkedTokenSource(token, _cancel.Token).Token;
+			_icancel = CancellationTokenSource.CreateLinkedTokenSource(token, _cancel.Token);
+			_inner = _icancel.Token;
 		}
 
 		private Task<T> _innerTask;
@@ -73,19 +75,19 @@
 
 		private async Task<T> InSecure()
 		{
-			await using (var _ = await _lock.BlockAsyncLock())
+			await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
 				_innerTask ??= InTask();
 
-			return await _innerTask;
+			return await _innerTask.ConfigureAwait(false);
 		}
 
 		private async Task<T> InTask()
 		{
-			await Task.WhenAny(_source.Task, Task.Delay(-1, _inner));
-			await using var _ = await _lock.BlockAsyncLock();
-			await TrySetCancAsyncInner();
+			await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(false);
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await TrySetCancAsyncInner().ConfigureAwait(false);
 
-			var result = await _source.Task;
+			var result = await _source.Task.ConfigureAwait(false);
 
 			//If it's result, return.
 			if (result.Item1)
@@ -130,30 +132,30 @@
 		/// <returns></returns>
 		public async Task<bool> TrySetResultAsync(T result)
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 
-			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((true, result)));
+			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((true, result))).ConfigureAwait(false);
 		}
 
 		public async Task<bool> TrySetExceptionAsync(Exception result)
 		{
-			await using var _ = await _lock.BlockAsyncLock();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 
-			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? result : null)));
+			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? result : null))).ConfigureAwait(false);
 		}
 
 		public async Task<bool> TrySetCanceledAsync()
 		{
-			await using var _ = await _lock.BlockAsyncLock();
-			return await TrySetCancAsyncInner();
+			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			return await TrySetCancAsyncInner().ConfigureAwait(false);
 		}
 
 		private async Task<bool> TrySetCancAsyncInner()
 		{
 			if (!_inner.IsCancellationRequested)
-				await Task.Run(_cancel.Cancel);
+				await Task.Run(_cancel.Cancel).ConfigureAwait(false);
 
-			return _inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null)));
+			return _inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null))).ConfigureAwait(false);
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -165,8 +167,9 @@
 			{
 				_lock.Dispose();
 				_cancel.Dispose();
+				_icancel.Dispose();
 			}
-
+			//Console.WriteLine($"Died-{GetType().Name}");
 			disposedValue = true;
 		}
 
@@ -174,7 +177,7 @@
 		{
 			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
 			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
+			//GC.SuppressFinalize(this);
 		}
 
 		~MyTaskSource() => Dispose(disposing: false);
