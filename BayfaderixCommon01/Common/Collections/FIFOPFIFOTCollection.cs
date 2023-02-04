@@ -95,7 +95,7 @@
 			await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
 				itemGet = await InnerGetItem(token).ConfigureAwait(false);
 
-			return await itemGet;
+			return await itemGet.ConfigureAwait(false);
 		}
 	}
 }

@@ -9,8 +9,8 @@
 		public async Task Link(INodeReceiver sink)
 		{
 			var link = new ItemInstantTransferLink(this, sink);
-			await sink.Link(link);
-			await Link(link);
+			await sink.Link(link).ConfigureAwait(false);
+			await Link(link).ConfigureAwait(false);
 		}
 
 		public Task Link(INodeLink link)
@@ -23,8 +23,8 @@
 		{
 			if (_outputLinks.Find(x => x.IsThisPair(this, sink)) is var link == default)
 				return;
-			await UnLink(link);
-			await sink.UnLink(link);
+			await UnLink(link).ConfigureAwait(false);
+			await sink.UnLink(link).ConfigureAwait(false);
 		}
 
 		public Task UnLink(INodeLink link) => Task.FromResult(_outputLinks.Remove(link));
