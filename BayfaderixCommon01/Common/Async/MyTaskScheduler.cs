@@ -5,7 +5,7 @@
 	/// </summary>
 	internal sealed class MyTaskScheduler : TaskScheduler
 	{
-		private MySingleThreadSyncContext _context;
+		private readonly MySingleThreadSyncContext _context;
 
 		public MyTaskScheduler(MySingleThreadSyncContext context)
 		{
@@ -16,9 +16,9 @@
 
 		protected override void QueueTask(Task task)
 		{
-			_context.Post(x => base.TryExecuteTask(x as Task), task);
+			_context.Post(x => base.TryExecuteTask(task), null);
 		}
 
-		protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => false;
+		protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => Current == this && TryExecuteTask(task);
 	}
 }

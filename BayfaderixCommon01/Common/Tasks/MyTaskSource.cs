@@ -1,4 +1,6 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Common
+﻿using Name.Bayfaderix.Darxxemiyur.Common.Extensions;
+
+namespace Name.Bayfaderix.Darxxemiyur.Common
 {
 	public class MyTaskSource : IDisposable
 	{
@@ -14,6 +16,29 @@
 		public Task<bool> TrySetCanceledAsync() => _facade.TrySetCanceledAsync();
 
 		public Task<bool> TrySetExceptionAsync(Exception exception) => _facade.TrySetExceptionAsync(exception);
+
+		public async Task MimicResult(Task mimic)
+		{
+			try
+			{
+				await mimic;
+				await TrySetResultAsync();
+			}
+			catch (TaskCanceledException)
+			{
+				await TrySetCanceledAsync();
+			}
+			catch (Exception e)
+			{
+				await TrySetExceptionAsync(e);
+			}
+		}
+
+		public async Task FollowResult(Task follow)
+		{
+			await MimicResult(follow);
+			await MyTask;
+		}
 
 		public bool TrySetResult() => _facade.TrySetResult(false);
 
@@ -51,6 +76,7 @@
 	{
 		private readonly TaskCompletionSource<(bool, object)> _source;
 		private readonly AsyncLocker _lock;
+		private readonly AsyncLocker _lockb;
 		private readonly CancellationTokenSource _cancel;
 		private readonly CancellationTokenSource _icancel;
 		private readonly CancellationToken _inner;
@@ -59,6 +85,7 @@
 		public MyTaskSource(CancellationToken token = default, bool throwOnException = true)
 		{
 			_lock = new();
+			_lockb = new();
 			_source = new();
 			_throwOnException = throwOnException;
 			_cancel = new CancellationTokenSource();
@@ -75,7 +102,7 @@
 
 		private async Task<T> InSecure()
 		{
-			await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
+			await using (var _ = await _lockb.BlockAsyncLock().ConfigureAwait(false))
 				_innerTask ??= InTask();
 
 			return await _innerTask.ConfigureAwait(false);
@@ -83,9 +110,10 @@
 
 		private async Task<T> InTask()
 		{
-			await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(false);
-			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
-			await TrySetCancAsyncInner().ConfigureAwait(false);
+			if (!_source.Task.IsCompleted)
+				await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(false);
+			//await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await TrySetCanceledAsync().ConfigureAwait(false);
 
 			var result = await _source.Task.ConfigureAwait(false);
 
@@ -99,6 +127,28 @@
 
 			//Else throw exception.
 			throw new MyTaskSourceException((Exception)result.Item2);
+		}
+
+		public async Task MimicResult(Task<T> mimic)
+		{
+			try
+			{
+				await TrySetResultAsync(await mimic);
+			}
+			catch (TaskCanceledException)
+			{
+				await TrySetCanceledAsync();
+			}
+			catch (Exception e)
+			{
+				await TrySetExceptionAsync(e);
+			}
+		}
+
+		public async Task<T> FollowResult(Task<T> follow)
+		{
+			await MimicResult(follow);
+			return await MyTask;
 		}
 
 		public bool TrySetResult(T result)
@@ -134,28 +184,23 @@
 		{
 			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 
-			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((true, result))).ConfigureAwait(false);
+			return !_inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((true, result)));
 		}
 
 		public async Task<bool> TrySetExceptionAsync(Exception result)
 		{
 			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 
-			return !_inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? result : null))).ConfigureAwait(false);
+			return !_inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((false, _throwOnException ? result : null)));
 		}
 
 		public async Task<bool> TrySetCanceledAsync()
 		{
 			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
-			return await TrySetCancAsyncInner().ConfigureAwait(false);
-		}
-
-		private async Task<bool> TrySetCancAsyncInner()
-		{
 			if (!_inner.IsCancellationRequested)
-				await Task.Run(_cancel.Cancel).ConfigureAwait(false);
+				_cancel.Cancel();
 
-			return _inner.IsCancellationRequested && await Task.Run(() => _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null))).ConfigureAwait(false);
+			return _inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null)));
 		}
 
 		protected virtual void Dispose(bool disposing)

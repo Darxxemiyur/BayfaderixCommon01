@@ -1,4 +1,6 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Common
+﻿using Name.Bayfaderix.Darxxemiyur.Common.Extensions;
+
+namespace Name.Bayfaderix.Darxxemiyur.Common
 {
 	/// <summary>
 	/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel
@@ -30,7 +32,7 @@
 			return new BlockAsyncLock(this);
 		}
 
-		public Task AsyncUnlock() => Task.Run(Unlock);
+		public Task AsyncUnlock() => MyTaskExtensions.RunOnScheduler(Unlock);
 
 		public void Unlock() => _lock.Release();
 
