@@ -6,25 +6,23 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 	{
 		private readonly Thread _mainThread;
 		private readonly MyTaskSource<TaskScheduler> _scheduler;
+		private readonly Task<TaskFactory> _taskFactory;
 
 		public MySingleThreadSyncContext()
 		{
 			_handle = new(false, EventResetMode.AutoReset);
 			_tasks = new();
 			_scheduler = new();
-
+			_taskFactory = _scheduler.MyTask.ContinueWith(x => new TaskFactory(x.Result));
 			_mainThread = new Thread(Spin);
+			Post((x) => _scheduler.TrySetResult(TaskScheduler.FromCurrentSynchronizationContext()), null);
 			_mainThread.Start(this);
-			Post((x) => {
-				_scheduler.TrySetResult(TaskScheduler.FromCurrentSynchronizationContext());
-			}, null);
 		}
 
 		private readonly EventWaitHandle _handle;
 		public Thread MyThread => _mainThread;
 		public Task<TaskScheduler> MyTaskScheduler => _scheduler.MyTask;
-
-		public static explicit operator TaskScheduler(MySingleThreadSyncContext context) => context.MyTaskScheduler.Result;
+		public Task<TaskFactory> TaskFactory => _taskFactory;
 
 		public override void Post(SendOrPostCallback d, object? state)
 		{
@@ -35,16 +33,15 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 			}
 		}
 
-		//Do not make send different from post. Because intended.
-		public override void Send(SendOrPostCallback d, object? state) => Post(d, state);
+		public override void Send(SendOrPostCallback d, object? state) => d(state);
 
 		private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasks;
 
 		private void Spin(object contextO)
 		{
 			var context = contextO as MySingleThreadSyncContext;
-
 			SetSynchronizationContext(context);
+
 			while (true)
 			{
 				SendOrPostCallback d = null;
@@ -52,7 +49,6 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 				lock (_tasks)
 					if (_tasks.TryTake(out var item))
 						(d, arg) = item;
-
 				if (d != null)
 					d(arg);
 				else

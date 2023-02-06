@@ -55,7 +55,7 @@
 		/// Is there any receivers in the receiver queue
 		/// </summary>
 		/// <returns></returns>
-		public async Task<bool> AnyReceiverss()
+		public async Task<bool> AnyReceivers()
 		{
 			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
 			return _receivers.Any();
