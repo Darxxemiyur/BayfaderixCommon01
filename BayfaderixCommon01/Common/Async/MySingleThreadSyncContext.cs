@@ -5,7 +5,10 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 	public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingContext
 	{
 		private readonly Thread _mainThread;
-		private readonly MyTaskSource<TaskScheduler> _scheduler;
+
+		//Use .NET's TCS because mine relies on MyTaskExtensions.
+		private readonly TaskCompletionSource<TaskScheduler> _scheduler;
+
 		private readonly Task<TaskFactory> _taskFactory;
 
 		public MySingleThreadSyncContext()
@@ -13,7 +16,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 			_handle = new(false, EventResetMode.AutoReset);
 			_tasks = new();
 			_scheduler = new();
-			_taskFactory = _scheduler.MyTask.ContinueWith(x => new TaskFactory(x.Result));
+			_taskFactory = _scheduler.Task.ContinueWith(x => new TaskFactory(x.Result));
 			_mainThread = new Thread(Spin);
 			Post((x) => _scheduler.TrySetResult(TaskScheduler.FromCurrentSynchronizationContext()), null);
 			_mainThread.Start(this);
@@ -21,7 +24,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 
 		private readonly EventWaitHandle _handle;
 		public Thread MyThread => _mainThread;
-		public Task<TaskScheduler> MyTaskScheduler => _scheduler.MyTask;
+		public Task<TaskScheduler> MyTaskScheduler => _scheduler.Task;
 		public Task<TaskFactory> TaskFactory => _taskFactory;
 
 		public override void Post(SendOrPostCallback d, object? state)
