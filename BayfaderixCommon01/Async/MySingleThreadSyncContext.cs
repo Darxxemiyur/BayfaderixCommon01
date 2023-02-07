@@ -6,31 +6,47 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 	{
 		private readonly Thread _mainThread;
 
-		//Use .NET's TCS because mine relies on MyTaskExtensions.
-		private readonly TaskCompletionSource<TaskScheduler> _scheduler;
-
-		private readonly TaskCompletionSource<TaskFactory> _taskFactory;
-
 		public MySingleThreadSyncContext()
 		{
 			_handle = new(false, EventResetMode.AutoReset);
 			_tasks = new();
+			_myTaskSchedulerSource = new();
+			_myTaskFactorySource = new();
 			_tasksToDo = new();
-			_scheduler = new();
-			_taskFactory = new();
 			_mainThread = new Thread(Spin);
 			Post((x) => {
 				var ts = TaskScheduler.FromCurrentSynchronizationContext();
-				_scheduler.TrySetResult(ts);
-				_taskFactory.TrySetResult(new(ts));
+				var tf = new TaskFactory(ts);
+				MyTaskScheduler = ts;
+				_myTaskSchedulerSource.TrySetResult(ts);
+				MyTaskFactory = tf;
+				_myTaskFactorySource.TrySetResult(tf);
 			}, null);
 			_mainThread.Start(this);
 		}
 
 		private readonly EventWaitHandle _handle;
 		public Thread MyThread => _mainThread;
-		public Task<TaskScheduler> MyTaskScheduler => _scheduler.Task;
-		public Task<TaskFactory> TaskFactory => _taskFactory.Task;
+
+		private readonly TaskCompletionSource<TaskScheduler> _myTaskSchedulerSource;
+
+		public Task<TaskScheduler> MyTaskSchedulerPromise => _myTaskSchedulerSource.Task;
+
+		private readonly TaskCompletionSource<TaskFactory> _myTaskFactorySource;
+
+		public Task<TaskFactory> MyTaskFactoryPromise => _myTaskFactorySource.Task;
+
+		public TaskScheduler? MyTaskScheduler {
+			get;
+			private set;
+		}
+
+		public TaskFactory? MyTaskFactory {
+			get;
+			private set;
+		}
+
+		public SynchronizationContext ThisContext => this;
 
 		public override void Post(SendOrPostCallback d, object? state)
 		{
