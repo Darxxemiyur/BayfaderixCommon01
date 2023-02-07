@@ -8,6 +8,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 
 		//Use .NET's TCS because mine relies on MyTaskExtensions.
 		private readonly TaskCompletionSource<TaskScheduler> _scheduler;
+
 		private readonly TaskCompletionSource<TaskFactory> _taskFactory;
 
 		public MySingleThreadSyncContext()
@@ -47,7 +48,6 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 			var context = contextO as MySingleThreadSyncContext;
 			SetSynchronizationContext(context);
 
-			var i = 0;
 			while (true)
 			{
 				while (_tasksToDo.TryTake(out var item))
