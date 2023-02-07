@@ -9,53 +9,59 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 		//Use .NET's TCS because mine relies on MyTaskExtensions.
 		private readonly TaskCompletionSource<TaskScheduler> _scheduler;
 
-		private readonly Task<TaskFactory> _taskFactory;
+		private readonly TaskCompletionSource<TaskFactory> _taskFactory;
 
 		public MySingleThreadSyncContext()
 		{
 			_handle = new(false, EventResetMode.AutoReset);
 			_tasks = new();
+			_tasksToDo = new();
 			_scheduler = new();
-			_taskFactory = _scheduler.Task.ContinueWith(x => new TaskFactory(x.Result));
+			_taskFactory = new();
 			_mainThread = new Thread(Spin);
-			Post((x) => _scheduler.TrySetResult(TaskScheduler.FromCurrentSynchronizationContext()), null);
+			Post((x) => {
+				var ts = TaskScheduler.FromCurrentSynchronizationContext();
+				_scheduler.TrySetResult(ts);
+				_taskFactory.TrySetResult(new(ts));
+			}, null);
 			_mainThread.Start(this);
 		}
 
 		private readonly EventWaitHandle _handle;
 		public Thread MyThread => _mainThread;
 		public Task<TaskScheduler> MyTaskScheduler => _scheduler.Task;
-		public Task<TaskFactory> TaskFactory => _taskFactory;
+		public Task<TaskFactory> TaskFactory => _taskFactory.Task;
 
 		public override void Post(SendOrPostCallback d, object? state)
 		{
 			lock (_tasks)
-			{
-				_tasks.Add((d, state));
-				_handle.Set();
-			}
+				_tasksToDo.Add((d, state));
+			_handle.Set();
 		}
 
 		public override void Send(SendOrPostCallback d, object? state) => d(state);
 
-		private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasks;
+		private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasksToDo;
+		private readonly LinkedList<(SendOrPostCallback, object?)> _tasks;
 
 		private void Spin(object contextO)
 		{
 			var context = contextO as MySingleThreadSyncContext;
 			SetSynchronizationContext(context);
 
+			var i = 0;
 			while (true)
 			{
-				SendOrPostCallback d = null;
-				object arg = null;
-				lock (_tasks)
-					if (_tasks.TryTake(out var item))
-						(d, arg) = item;
-				if (d != null)
-					d(arg);
-				else
-					_handle.WaitOne();
+				lock (_tasksToDo)
+					while (_tasksToDo.TryTake(out var item))
+						_tasks.AddLast(item);
+
+				foreach ((var d, var o) in _tasks)
+					if (d != null)
+						d(o);
+
+				_tasks.Clear();
+				_handle.WaitOne();
 			}
 		}
 	}
