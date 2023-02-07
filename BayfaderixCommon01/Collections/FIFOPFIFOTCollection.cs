@@ -3,12 +3,13 @@
 	/// <summary>
 	/// FIFO place, FIFO take, non-blocking async collection.
 	/// </summary>
-	public class FIFOPFIFOTCollection<T>
+	public class FIFOPFIFOTCollection<T> : IDisposable
 	{
 		private readonly Queue<T> _queue;
 		private readonly Queue<MyTaskSource<T>> _receivers;
 		private readonly AsyncLocker _lock;
 		private readonly bool _configureAwait;
+		private bool _disposedValue;
 
 		public FIFOPFIFOTCollection(bool configureAwait)
 		{
@@ -98,6 +99,27 @@
 				itemGet = await InnerGetItem(token).ConfigureAwait(_configureAwait);
 
 			return await itemGet.ConfigureAwait(_configureAwait);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposedValue)
+				return;
+
+			if (disposing)
+			{
+				_lock.Dispose();
+			}
+
+			_disposedValue = true;
+		}
+
+		~FIFOPFIFOTCollection() => Dispose(disposing: false);
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

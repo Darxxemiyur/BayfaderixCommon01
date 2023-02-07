@@ -10,6 +10,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 	{
 		private readonly SemaphoreSlim _lock;
 		private readonly bool _configureAwait;
+		private bool _disposedValue;
 
 		public AsyncLocker(bool configureAwait = false) => (_lock, _configureAwait) = (new(1, 1), configureAwait);
 
@@ -23,20 +24,47 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		public async Task<BlockAsyncLock> BlockAsyncLock(CancellationToken token = default, bool configureAwait = false)
 		{
+			if (_disposedValue)
+				throw new ObjectDisposedException(GetType().Name);
 			await AsyncLock(token).ConfigureAwait(_configureAwait);
 			return new BlockAsyncLock(this, configureAwait);
 		}
 
 		public BlockAsyncLock BlockLock(bool configureAwait = false)
 		{
+			if (_disposedValue)
+				throw new ObjectDisposedException(GetType().Name);
 			Lock();
 			return new BlockAsyncLock(this, configureAwait);
 		}
 
 		public Task AsyncUnlock() => MyTaskExtensions.RunOnScheduler(Unlock);
 
-		public void Unlock() => _lock.Release();
+		public void Unlock()
+		{
+			if (_disposedValue)
+				throw new ObjectDisposedException(GetType().Name);
+			_lock.Release();
+		}
 
-		public void Dispose() => ((IDisposable)_lock).Dispose();
+		private void Dispose(bool disposing)
+		{
+			if (_disposedValue)
+				return;
+
+			if (disposing)
+			{
+				_lock.Dispose();
+			}
+			_disposedValue = true;
+		}
+
+		~AsyncLocker() => Dispose(false);
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
 	}
 }

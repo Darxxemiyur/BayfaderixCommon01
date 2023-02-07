@@ -4,7 +4,7 @@
 	/// Acts as a relay that allows to stop awaiting of non-cancellable task, almost seamlessly.
 	/// </summary>
 	//Soon [Obsolete("Use .WaitAsync() instead.")]
-	public class MyRelayTask
+	public sealed class MyRelayTask
 	{
 		private readonly MyRelayTask<bool> _facade;
 

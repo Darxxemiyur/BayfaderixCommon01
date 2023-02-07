@@ -3,11 +3,12 @@
 	/// <summary>
 	/// FIFO place, Take all, non-blocking async collection.
 	/// </summary>
-	public class FIFOPTACollection<T>
+	public class FIFOPTACollection<T> : IDisposable
 	{
 		private readonly AsyncLocker _lock;
 		private readonly LinkedList<T> _queue;
 		private MyTaskSource _crank;
+		private bool _disposedValue;
 		private readonly bool _configureAwait;
 
 		public FIFOPTACollection(bool configureAwait = false)
@@ -113,6 +114,30 @@
 			_crank = new();
 
 			return outQueue;
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposedValue)
+				return;
+
+			if (disposing)
+			{
+				_lock.Dispose();
+				_crank.Dispose();
+				_crank = null;
+			}
+
+			_disposedValue = true;
+		}
+
+		~FIFOPTACollection() => Dispose(disposing: false);
+
+		public void Dispose()
+		{
+			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

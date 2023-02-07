@@ -73,6 +73,7 @@
 			if (disposing)
 			{
 				_generator.Dispose();
+				_generator = null;
 				_sync.Dispose();
 			}
 

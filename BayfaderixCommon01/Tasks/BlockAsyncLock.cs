@@ -12,7 +12,7 @@
 
 		public BlockAsyncLock(AsyncLocker tlock, bool configureAwait = false) => (_lock, _configureAwait) = (tlock, configureAwait);
 
-		~BlockAsyncLock(default, _configureAwait) => private TryToRelease();
+		~BlockAsyncLock() => TryToRelease();
 
 		private void TryToRelease()
 		{

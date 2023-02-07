@@ -2,7 +2,7 @@
 
 namespace Name.Bayfaderix.Darxxemiyur.Common
 {
-	public class MyTaskSource : IDisposable
+	public sealed class MyTaskSource : IDisposable
 	{
 		private readonly MyTaskSource<bool> _facade;
 		private bool disposedValue;
@@ -46,7 +46,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		public bool TrySetException(Exception exception) => _facade.TrySetException(exception);
 
-		protected virtual void Dispose(bool disposing)
+		private void Dispose(bool disposing)
 		{
 			if (!disposedValue)
 			{

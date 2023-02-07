@@ -2,7 +2,7 @@
 
 namespace Name.Bayfaderix.Darxxemiyur.Common
 {
-	public class MyTaskSourceException : BayfaderixCommonException
+	public sealed class MyTaskSourceException : BayfaderixCommonException
 	{
 		public override string StackTrace => HideSecretStackTrace(base.StackTrace, x => x.Contains(nameof(MyTaskSource)));
 
