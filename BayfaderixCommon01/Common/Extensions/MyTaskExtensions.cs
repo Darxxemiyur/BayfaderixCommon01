@@ -4,7 +4,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 {
 	public static class MyTaskExtensions
 	{
-		public static async Task<TResult?> AsType<TInput, TResult>(this Task<TInput> task) where TInput : class where TResult : class => await task.ConfigureAwait(false) as TResult;
+		public static async Task<TResult?> AsType<TInput, TResult>(this Task<TInput> task, bool configureAwait = false) where TInput : class where TResult : class => await task.ConfigureAwait(configureAwait) as TResult;
 
 		public static IEnumerable<Task<TResult?>> RunOnScheduler<TResult>(this IEnumerable<Func<CancellationToken, Task<TResult?>>> funcs, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => funcs.Select(func => RunOnScheduler(() => func(token), token, scheduler, continueOnCapturedContext));
 

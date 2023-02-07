@@ -11,9 +11,9 @@
 			return list.Aggregate(seedValue + list.GetHashCode(), (current, item) => (current * primeNumber) + (Equals(item, default(TItem)) ? 0 : item.GetHashCode()));
 		}
 
-		private static async Task<LinkedListNode<Task<T>>> ToMyThing<T>(LinkedListNode<Task<T>> g)
+		private static async Task<LinkedListNode<Task<T>>> ToMyThing<T>(LinkedListNode<Task<T>> g, bool configureAwait = false)
 		{
-			await g.Value.ConfigureAwait(false);
+			await g.Value.ConfigureAwait(configureAwait);
 			return g;
 		}
 

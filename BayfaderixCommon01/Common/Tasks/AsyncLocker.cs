@@ -9,8 +9,9 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 	public sealed class AsyncLocker : IDisposable
 	{
 		private readonly SemaphoreSlim _lock;
+		private readonly bool _configureAwait;
 
-		public AsyncLocker() => _lock = new(1, 1);
+		public AsyncLocker(bool configureAwait = false) => (_lock, _configureAwait) = (new(1, 1), configureAwait);
 
 		public Task AsyncLock(CancellationToken token = default) => _lock.WaitAsync(token);
 
@@ -20,16 +21,16 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		public void Lock(TimeSpan time, CancellationToken token = default) => _lock.Wait(time, token);
 
-		public async Task<BlockAsyncLock> BlockAsyncLock(CancellationToken token = default)
+		public async Task<BlockAsyncLock> BlockAsyncLock(CancellationToken token = default, bool configureAwait = false)
 		{
-			await AsyncLock(token).ConfigureAwait(false);
-			return new BlockAsyncLock(this);
+			await AsyncLock(token).ConfigureAwait(_configureAwait);
+			return new BlockAsyncLock(this, configureAwait);
 		}
 
-		public BlockAsyncLock BlockLock()
+		public BlockAsyncLock BlockLock(bool configureAwait = false)
 		{
 			Lock();
-			return new BlockAsyncLock(this);
+			return new BlockAsyncLock(this, configureAwait);
 		}
 
 		public Task AsyncUnlock() => MyTaskExtensions.RunOnScheduler(Unlock);

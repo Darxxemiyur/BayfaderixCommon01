@@ -81,13 +81,15 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		private readonly CancellationTokenSource _icancel;
 		private readonly CancellationToken _inner;
 		private readonly bool _throwOnException;
+		private readonly bool _configureAwait;
 
-		public MyTaskSource(CancellationToken token = default, bool throwOnException = true)
+		public MyTaskSource(CancellationToken token = default, bool throwOnException = true, bool configureAwait = false)
 		{
 			_lock = new();
 			_lockb = new();
 			_source = new();
 			_throwOnException = throwOnException;
+			_configureAwait = configureAwait;
 			_cancel = new CancellationTokenSource();
 			_icancel = CancellationTokenSource.CreateLinkedTokenSource(token, _cancel.Token);
 			_inner = _icancel.Token;
@@ -102,20 +104,20 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		private async Task<T> InSecure()
 		{
-			await using (var _ = await _lockb.BlockAsyncLock().ConfigureAwait(false))
+			await using (var _ = await _lockb.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 				_innerTask ??= InTask();
 
-			return await _innerTask.ConfigureAwait(false);
+			return await _innerTask.ConfigureAwait(_configureAwait);
 		}
 
 		private async Task<T> InTask()
 		{
 			if (!_source.Task.IsCompleted)
-				await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(false);
-			//await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
-			await TrySetCanceledAsync().ConfigureAwait(false);
+				await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(_configureAwait);
+			//await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+			await TrySetCanceledAsync().ConfigureAwait(_configureAwait);
 
-			var result = await _source.Task.ConfigureAwait(false);
+			var result = await _source.Task.ConfigureAwait(_configureAwait);
 
 			//If it's result, return.
 			if (result.Item1)
@@ -182,21 +184,21 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// <returns></returns>
 		public async Task<bool> TrySetResultAsync(T result)
 		{
-			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
 			return !_inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((true, result)));
 		}
 
 		public async Task<bool> TrySetExceptionAsync(Exception result)
 		{
-			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
 			return !_inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((false, _throwOnException ? result : null)));
 		}
 
 		public async Task<bool> TrySetCanceledAsync()
 		{
-			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 			if (!_inner.IsCancellationRequested)
 				_cancel.Cancel();
 

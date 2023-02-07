@@ -7,11 +7,12 @@
 	public sealed class BlockAsyncLock : IDisposable, IAsyncDisposable
 	{
 		private readonly AsyncLocker _lock;
+		private readonly bool _configureAwait;
 		private bool _unlocked;
 
-		public BlockAsyncLock(AsyncLocker tlock) => _lock = tlock;
+		public BlockAsyncLock(AsyncLocker tlock, bool configureAwait = false) => (_lock, _configureAwait) = (tlock, configureAwait);
 
-		~BlockAsyncLock() => TryToRelease();
+		~BlockAsyncLock(default, _configureAwait) => private TryToRelease();
 
 		private void TryToRelease()
 		{
@@ -28,7 +29,7 @@
 				return;
 
 			_unlocked = true;
-			await _lock.AsyncUnlock().ConfigureAwait(false);
+			await _lock.AsyncUnlock().ConfigureAwait(_configureAwait);
 		}
 
 		public void Dispose() => TryToRelease();

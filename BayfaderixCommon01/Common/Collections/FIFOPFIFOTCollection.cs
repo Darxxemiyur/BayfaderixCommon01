@@ -8,9 +8,11 @@
 		private readonly Queue<T> _queue;
 		private readonly Queue<MyTaskSource<T>> _receivers;
 		private readonly AsyncLocker _lock;
+		private readonly bool _configureAwait;
 
-		public FIFOPFIFOTCollection()
+		public FIFOPFIFOTCollection(bool configureAwait)
 		{
+			_configureAwait = configureAwait;
 			_lock = new();
 			_queue = new();
 			_receivers = new();
@@ -25,8 +27,8 @@
 			}
 
 			var rem = _receivers.Dequeue();
-			if (!await rem.TrySetResultAsync(item).ConfigureAwait(false))
-				await InnerPlaceItem(item).ConfigureAwait(false);
+			if (!await rem.TrySetResultAsync(item).ConfigureAwait(_configureAwait))
+				await InnerPlaceItem(item).ConfigureAwait(_configureAwait);
 		}
 
 		/// <summary>
@@ -37,8 +39,8 @@
 		/// <returns></returns>
 		public async Task PlaceItem(T item)
 		{
-			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
-			await InnerPlaceItem(item).ConfigureAwait(false);
+			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+			await InnerPlaceItem(item).ConfigureAwait(_configureAwait);
 		}
 
 		/// <summary>
@@ -47,7 +49,7 @@
 		/// <returns></returns>
 		public async Task<bool> AnyItems()
 		{
-			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 			return _queue.Any();
 		}
 
@@ -57,7 +59,7 @@
 		/// <returns></returns>
 		public async Task<bool> AnyReceivers()
 		{
-			await using var _ = await _lock.BlockAsyncLock().ConfigureAwait(false);
+			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 			return _receivers.Any();
 		}
 
@@ -69,7 +71,7 @@
 			var item = _queue.Dequeue();
 
 			if (!token.IsCancellationRequested)
-				return item == null ? await InnerGetItem(token).ConfigureAwait(false) : Task.FromResult(item);
+				return item == null ? await InnerGetItem(token).ConfigureAwait(_configureAwait) : Task.FromResult(item);
 
 			_queue.Enqueue(item);
 
@@ -81,7 +83,7 @@
 			var itemReceiver = new MyTaskSource<T>(token);
 			_receivers.Enqueue(itemReceiver);
 
-			return await itemReceiver.MyTask.ConfigureAwait(false);
+			return await itemReceiver.MyTask.ConfigureAwait(_configureAwait);
 		}
 
 		/// <summary>
@@ -92,10 +94,10 @@
 		public async Task<T> GetItem(CancellationToken token = default)
 		{
 			var itemGet = Task.FromResult<T>(default);
-			await using (var _ = await _lock.BlockAsyncLock().ConfigureAwait(false))
-				itemGet = await InnerGetItem(token).ConfigureAwait(false);
+			await using (var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+				itemGet = await InnerGetItem(token).ConfigureAwait(_configureAwait);
 
-			return await itemGet.ConfigureAwait(false);
+			return await itemGet.ConfigureAwait(_configureAwait);
 		}
 	}
 }

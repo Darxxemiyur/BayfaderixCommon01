@@ -3,14 +3,15 @@
 	public class NodeTranceiver : INodeTranceiver
 	{
 		private readonly List<INodeLink> _outputLinks;
+		private readonly bool _configureAwait;
 
-		public NodeTranceiver() => _outputLinks = new();
+		public NodeTranceiver(bool configureAwait = false) => (_configureAwait, _outputLinks) = (configureAwait, new());
 
 		public async Task Link(INodeReceiver sink)
 		{
 			var link = new ItemInstantTransferLink(this, sink);
-			await sink.Link(link).ConfigureAwait(false);
-			await Link(link).ConfigureAwait(false);
+			await sink.Link(link).ConfigureAwait(_configureAwait);
+			await Link(link).ConfigureAwait(_configureAwait);
 		}
 
 		public Task Link(INodeLink link)
@@ -23,8 +24,8 @@
 		{
 			if (_outputLinks.Find(x => x.IsThisPair(this, sink)) is var link == default)
 				return;
-			await UnLink(link).ConfigureAwait(false);
-			await sink.UnLink(link).ConfigureAwait(false);
+			await UnLink(link).ConfigureAwait(_configureAwait);
+			await sink.UnLink(link).ConfigureAwait(_configureAwait);
 		}
 
 		public Task UnLink(INodeLink link) => Task.FromResult(_outputLinks.Remove(link));

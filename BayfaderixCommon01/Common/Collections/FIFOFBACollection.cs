@@ -6,13 +6,15 @@
 	/// <typeparam name="T"></typeparam>
 	public class FIFOFBACollection<T> : IDisposable
 	{
-		public FIFOFBACollection()
+		public FIFOFBACollection(bool configureAwait = false)
 		{
 			_sync = new();
 			_chain = new();
 			_chain.AddFirst((_generator = new()).MyTask);
+			_configureAwait = configureAwait;
 		}
 
+		private readonly bool _configureAwait;
 		private MyTaskSource<T> _generator;
 		private readonly LinkedList<Task<T>> _chain;
 		private readonly AsyncLocker _sync;
@@ -21,26 +23,26 @@
 
 		public async Task Handle(T stuff)
 		{
-			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
+			await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
 			if (_generator.MyTask.IsCanceled)
-				await _generator.MyTask.ConfigureAwait(false);
+				await _generator.MyTask.ConfigureAwait(_configureAwait);
 
-			await _generator.TrySetResultAsync(stuff).ConfigureAwait(false);
+			await _generator.TrySetResultAsync(stuff).ConfigureAwait(_configureAwait);
 			_chain.AddLast((_generator = new()).MyTask);
 		}
 
 		public async Task Cancel()
 		{
-			await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
-			await _generator.TrySetCanceledAsync().ConfigureAwait(false);
+			await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+			await _generator.TrySetCanceledAsync().ConfigureAwait(_configureAwait);
 		}
 
 		public async Task<T> GetData(CancellationToken token = default)
 		{
 			Task<T> result = null;
 
-			await using (var _ = await _sync.BlockAsyncLock().ConfigureAwait(false))
+			await using (var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			{
 				var node = _chain.First;
 				result = node.Value;
@@ -49,16 +51,16 @@
 
 			using var revert = new MyTaskSource<T>(token);
 
-			var either = await Task.WhenAny(result, revert.MyTask).ConfigureAwait(false);
+			var either = await Task.WhenAny(result, revert.MyTask).ConfigureAwait(_configureAwait);
 
 			if (either == revert.MyTask)
 			{
-				await using var _ = await _sync.BlockAsyncLock().ConfigureAwait(false);
+				await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 				_chain.AddFirst(result);
-				await revert.MyTask.ConfigureAwait(false);
+				await revert.MyTask.ConfigureAwait(_configureAwait);
 			}
 
-			return await either.ConfigureAwait(false);
+			return await either.ConfigureAwait(_configureAwait);
 		}
 
 		private bool disposedValue;
