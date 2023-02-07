@@ -8,7 +8,6 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 
 		//Use .NET's TCS because mine relies on MyTaskExtensions.
 		private readonly TaskCompletionSource<TaskScheduler> _scheduler;
-
 		private readonly TaskCompletionSource<TaskFactory> _taskFactory;
 
 		public MySingleThreadSyncContext()
@@ -34,8 +33,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 
 		public override void Post(SendOrPostCallback d, object? state)
 		{
-			lock (_tasks)
-				_tasksToDo.Add((d, state));
+			_tasksToDo.Add((d, state));
 			_handle.Set();
 		}
 
@@ -52,9 +50,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 			var i = 0;
 			while (true)
 			{
-				lock (_tasksToDo)
-					while (_tasksToDo.TryTake(out var item))
-						_tasks.AddLast(item);
+				while (_tasksToDo.TryTake(out var item))
+					_tasks.AddLast(item);
 
 				foreach ((var d, var o) in _tasks)
 					d?.Invoke(o);
