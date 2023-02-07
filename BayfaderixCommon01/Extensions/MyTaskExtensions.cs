@@ -29,7 +29,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 			return TaskScheduler.Current;
 		}
 
-		public static Task<TResult?> RunOnScheduler<TResult>(this Func<TResult?> func, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => RunOnScheduler(async () => func(), token, scheduler, continueOnCapturedContext);
+		public static Task<TResult?> RunOnScheduler<TResult>(this Func<TResult?> func, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => RunOnScheduler(func, token, scheduler, continueOnCapturedContext);
 
 		public static async Task<TResult?> RunOnScheduler<TResult>(this Func<Task<TResult?>> func, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => await Task.Factory.StartNew(func, token, TaskCreationOptions.None, scheduler = await GetScheduler(scheduler, continueOnCapturedContext)).Unwrap().ContinueWith(x => x.Result, token, default, scheduler).ConfigureAwait(continueOnCapturedContext);
 
@@ -41,7 +41,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 
 		public static Task RunOnScheduler(this Func<CancellationToken, Task> func, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => RunOnScheduler(() => func(token), token, scheduler, continueOnCapturedContext);
 
-		public static Task RunOnScheduler(this Action func, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => RunOnScheduler(async () => func(), token, scheduler, continueOnCapturedContext);
+		public static Task RunOnScheduler(this Action func, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => RunOnScheduler(func, token, scheduler, continueOnCapturedContext);
 
 		public static async Task RunOnScheduler(this Func<Task> func, CancellationToken token = default, TaskScheduler? scheduler = default, bool continueOnCapturedContext = false) => await Task.Factory.StartNew(func, token, TaskCreationOptions.None, scheduler = await GetScheduler(scheduler, continueOnCapturedContext)).Unwrap().ContinueWith(x => { }, token, default, scheduler).ConfigureAwait(continueOnCapturedContext);
 
