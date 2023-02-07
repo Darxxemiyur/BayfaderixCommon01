@@ -114,7 +114,6 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			if (!_source.Task.IsCompleted)
 				await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(_configureAwait);
-			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 			await TrySetCanceledAsync().ConfigureAwait(_configureAwait);
 
 			var result = await _source.Task.ConfigureAwait(_configureAwait);
