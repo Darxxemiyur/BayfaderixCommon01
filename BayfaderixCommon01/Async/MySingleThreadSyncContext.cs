@@ -57,8 +57,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 						_tasks.AddLast(item);
 
 				foreach ((var d, var o) in _tasks)
-					if (d != null)
-						d(o);
+					d?.Invoke(o);
 
 				_tasks.Clear();
 				_handle.WaitOne();
