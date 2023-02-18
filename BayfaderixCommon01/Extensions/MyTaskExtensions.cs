@@ -53,7 +53,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 
 		public static Task<TResult> MyContinueWith<TResult>(this Task func, Func<Task, TResult> act, TaskScheduler? scheduler = default) => func.ContinueWith(act, GetScheduler(scheduler));
 
-		public static Task<TOutResult> MyContinueWith<TInResult, TOutResult>(this Task<TInResult> func, Func<Task<TInResult>, TOutResult> act, TaskScheduler? scheduler = default, bool configureAwait = false) => func.ContinueWith(act, GetScheduler(scheduler));
+		public static Task<TOutResult> MyContinueWith<TInResult, TOutResult>(this Task<TInResult> func, Func<Task<TInResult>, TOutResult> act, TaskScheduler? scheduler = default) => func.ContinueWith(act, GetScheduler(scheduler));
 
 		public static Func<Task<TResult?>> RunWithToken<TResult>(this Func<CancellationToken, Task<TResult?>> func, CancellationToken token) => () => func(token);
 
