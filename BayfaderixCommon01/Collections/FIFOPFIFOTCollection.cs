@@ -1,9 +1,11 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Common
+﻿using Name.Bayfaderix.Darxxemiyur.Common.Extensions;
+
+namespace Name.Bayfaderix.Darxxemiyur.Common
 {
 	/// <summary>
 	/// FIFO place, FIFO take, non-blocking async collection.
 	/// </summary>
-	public class FIFOPFIFOTCollection<T> : IDisposable
+	public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 	{
 		private readonly Queue<T> _queue;
 		private readonly Queue<MyTaskSource<T>> _receivers;
@@ -87,6 +89,8 @@
 			return await itemReceiver.MyTask.ConfigureAwait(_configureAwait);
 		}
 
+		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(Dispose));
+
 		/// <summary>
 		/// Get item. If there is any, return it immediately, if not, take a place in the queue.
 		/// </summary>
@@ -94,7 +98,7 @@
 		/// <returns>Task representing overall procedure of retrieving the item</returns>
 		public async Task<T> GetItem(CancellationToken token = default)
 		{
-			var itemGet = Task.FromResult<T>(default);
+			Task<T> itemGet;
 			await using (var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 				itemGet = await InnerGetItem(token).ConfigureAwait(_configureAwait);
 

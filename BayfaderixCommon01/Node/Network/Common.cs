@@ -1,21 +1,23 @@
 namespace Name.Bayfaderix.Darxxemiyur.Node.Network
 {
+	public delegate Task<bool> NodeResultHandler(StepInfo args, CancellationToken token = default);
+
 	public static class NetworkCommon
 	{
-		public static Task<object> RunNetwork(INodeNetwork net, object payload, CancellationToken token = default) => RunNetwork(net, net.StepResultHandler, payload, token);
+		public static Task<StepInfo?> RunNetwork(INodeNetwork net, object payload, CancellationToken token = default, bool configureAwait = false) => RunNetwork(net, net.StepResultHandler, payload, token, configureAwait);
 
-		public static Task<object> RunNetwork(INodeNetwork net, NodeResultHandler handler, object payload, CancellationToken token = default) => RunNetwork(net.GetStartingInstruction(payload), handler, token);
+		public static Task<StepInfo?> RunNetwork(INodeNetwork net, NodeResultHandler handler, object payload, CancellationToken token = default, bool configureAwait = false) => RunNetwork(net.GetStartingInstruction(payload), handler, token, configureAwait);
 
-		public static Task<object> RunNetwork(INodeNetwork net, CancellationToken token = default) => RunNetwork(net, net.StepResultHandler, token);
+		public static Task<StepInfo?> RunNetwork(INodeNetwork net, CancellationToken token = default, bool configureAwait = false) => RunNetwork(net, net.StepResultHandler, token, configureAwait);
 
-		public static Task<object> RunNetwork(INodeNetwork net, NodeResultHandler handler, CancellationToken token = default) => RunNetwork(net.GetStartingInstruction(), handler, token);
+		public static Task<StepInfo?> RunNetwork(INodeNetwork net, NodeResultHandler handler, CancellationToken token = default, bool configureAwait = false) => RunNetwork(net.GetStartingInstruction(), handler, token, configureAwait);
 
-		private static async Task<object> RunNetwork(NextNetworkInstruction inst, NodeResultHandler handler, CancellationToken token = default, bool configureAwait = false)
+		public static async Task<StepInfo?> RunNetwork(StepInfo? inst, NodeResultHandler handler, CancellationToken token = default, bool configureAwait = false)
 		{
-			while (await handler(inst, token).ConfigureAwait(configureAwait))
-				inst = await inst.NextStep(new(inst)).ConfigureAwait(configureAwait);
+			while (inst?.NextStep != null && await handler(inst, token).ConfigureAwait(configureAwait))
+				inst = await inst.NextStep(inst).ConfigureAwait(configureAwait);
 
-			return inst.Payload;
+			return inst;
 		}
 	}
 }
