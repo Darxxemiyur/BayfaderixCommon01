@@ -1,6 +1,6 @@
 ﻿namespace Name.Bayfaderix.Darxxemiyur.Common
 {
-	public static class EnumerableExtensions
+	public static class CollectionExtensions
 	{
 		public static int GetSequenceHashCode<TItem>(this IEnumerable<TItem> list)
 		{
@@ -9,6 +9,15 @@
 			const int seedValue = 0x2D2816FE;
 			const int primeNumber = 397;
 			return list.Aggregate(seedValue + list.GetHashCode(), (current, item) => (current * primeNumber) + (Equals(item, default(TItem)) ? 0 : item.GetHashCode()));
+		}
+
+		public static async Task<IEnumerable<T>> ToEnumerableAsync<T>(this IAsyncEnumerable<T> enumerable, CancellationToken token = default)
+		{
+			var list = new LinkedList<T>();
+			await foreach (var item in enumerable.WithCancellation(token))
+				list.AddLast(item);
+
+			return list;
 		}
 
 		private static async Task<LinkedListNode<Task<T>>> ToMyThing<T>(LinkedListNode<Task<T>> g, bool configureAwait = false)
