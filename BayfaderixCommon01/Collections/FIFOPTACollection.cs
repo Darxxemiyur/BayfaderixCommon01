@@ -40,6 +40,13 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// </summary>
 		/// <param name="items"></param>
 		/// <returns></returns>
+		public async Task PlaceLast(IAsyncEnumerable<T> items) => await PlaceLast(await items.ToEnumerableAsync());
+
+		/// <summary>
+		/// Appends items to the list
+		/// </summary>
+		/// <param name="items"></param>
+		/// <returns></returns>
 		public async Task PlaceLast(IEnumerable<T> items)
 		{
 			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
@@ -59,6 +66,13 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			_queue.AddFirst(item);
 			await _crank.TrySetResultAsync().ConfigureAwait(_configureAwait);
 		}
+
+		/// <summary>
+		/// Prepends items to the list
+		/// </summary>
+		/// <param name="items"></param>
+		/// <returns></returns>
+		public async Task PlaceFirst(IAsyncEnumerable<T> items) => await PlaceFirst(await items.ToEnumerableAsync());
 
 		/// <summary>
 		/// Prepends items to the list
