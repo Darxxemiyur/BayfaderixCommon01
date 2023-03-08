@@ -7,7 +7,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		private readonly MyTaskSource<bool> _facade;
 		private bool disposedValue;
 
-		public MyTaskSource(CancellationToken token = default, bool throwOnException = true) => _facade = new(token, throwOnException);
+		public MyTaskSource(CancellationToken token = default, bool throwOnException = true, bool configureAwait = false) => _facade = new(token, throwOnException, configureAwait);
 
 		public Task MyTask => _facade.MyTask;
 
@@ -114,7 +114,6 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			if (!_source.Task.IsCompleted)
 				await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(_configureAwait);
-			//await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 			await TrySetCanceledAsync().ConfigureAwait(_configureAwait);
 
 			var result = await _source.Task.ConfigureAwait(_configureAwait);

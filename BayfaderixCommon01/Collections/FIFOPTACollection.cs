@@ -1,9 +1,13 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Common
+﻿using Name.Bayfaderix.Darxxemiyur.Common.Extensions;
+
+using System.Runtime.CompilerServices;
+
+namespace Name.Bayfaderix.Darxxemiyur.Common
 {
 	/// <summary>
 	/// FIFO place, Take all, non-blocking async collection.
 	/// </summary>
-	public class FIFOPTACollection<T> : IDisposable
+	public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumerable<T>
 	{
 		private readonly AsyncLocker _lock;
 		private readonly LinkedList<T> _queue;
@@ -139,5 +143,15 @@
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
+
+		private async IAsyncEnumerable<T> AsAsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
+		{
+			foreach (var item in await GetAllSafe(cancellationToken))
+				yield return item;
+		}
+
+		public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => AsAsyncEnumerable(cancellationToken).GetAsyncEnumerator(cancellationToken);
+
+		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(Dispose));
 	}
 }

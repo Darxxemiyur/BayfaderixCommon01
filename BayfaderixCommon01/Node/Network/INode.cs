@@ -6,26 +6,26 @@ namespace Name.Bayfaderix.Darxxemiyur.Node.Network
 		/// Retreives starting instruction for the network.
 		/// </summary>
 		/// <returns></returns>
-		NextNetworkInstruction GetStartingInstruction();
+		StepInfo GetStartingInstruction();
 
 		/// <summary>
 		/// Retreives starting instruction for the network.
 		/// </summary>
 		/// <param name="payload"></param>
 		/// <returns></returns>
-		NextNetworkInstruction GetStartingInstruction(object payload);
+		StepInfo GetStartingInstruction(object? payload) => GetStartingInstruction();
 
 		/// <summary>
 		/// Handler of step's result
 		/// </summary>
 		NodeResultHandler StepResultHandler {
-			get;
+			get => (x, y) => Task.FromResult(!y.IsCancellationRequested);
 		}
 
 		/// <summary>
 		/// Run this network.
 		/// </summary>
 		/// <returns></returns>
-		Task<object> RunNetwork();
+		Task<StepInfo?> RunNetwork() => NetworkCommon.RunNetwork(this, default, true);
 	}
 }
