@@ -22,21 +22,21 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			try
 			{
 				await mimic;
-				await TrySetResultAsync();
+				await this.TrySetResultAsync();
 			}
 			catch (TaskCanceledException)
 			{
-				await TrySetCanceledAsync();
+				await this.TrySetCanceledAsync();
 			}
 			catch (Exception e)
 			{
-				await TrySetExceptionAsync(e);
+				await this.TrySetExceptionAsync(e);
 			}
 		}
 
 		public async Task FollowResult(Task follow)
 		{
-			await MimicResult(follow);
+			await this.MimicResult(follow);
 			await MyTask;
 		}
 
@@ -59,11 +59,11 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			}
 		}
 
-		~MyTaskSource() => Dispose(disposing: false);
+		~MyTaskSource() => this.Dispose(disposing: false);
 
 		public void Dispose()
 		{
-			Dispose(disposing: true);
+			this.Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
 	}
@@ -98,14 +98,14 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		private Task<T> _innerTask;
 		private bool disposedValue;
 
-		public Task<T> MyTask => InSecure();
+		public Task<T> MyTask => this.InSecure();
 
 		public static implicit operator Task<T>(MyTaskSource<T> task) => task.MyTask;
 
 		private async Task<T> InSecure()
 		{
 			await using (var _ = await _lockb.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
-				_innerTask ??= InTask();
+				_innerTask ??= this.InTask();
 
 			return await _innerTask.ConfigureAwait(_configureAwait);
 		}
@@ -114,7 +114,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			if (!_source.Task.IsCompleted)
 				await Task.WhenAny(_source.Task, Task.Delay(-1, _inner)).ConfigureAwait(_configureAwait);
-			await TrySetCanceledAsync().ConfigureAwait(_configureAwait);
+			await this.TrySetCanceledAsync().ConfigureAwait(_configureAwait);
 
 			var result = await _source.Task.ConfigureAwait(_configureAwait);
 
@@ -134,21 +134,21 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			try
 			{
-				await TrySetResultAsync(await mimic);
+				await this.TrySetResultAsync(await mimic);
 			}
 			catch (TaskCanceledException)
 			{
-				await TrySetCanceledAsync();
+				await this.TrySetCanceledAsync();
 			}
 			catch (Exception e)
 			{
-				await TrySetExceptionAsync(e);
+				await this.TrySetExceptionAsync(e);
 			}
 		}
 
 		public async Task<T> FollowResult(Task<T> follow)
 		{
-			await MimicResult(follow);
+			await this.MimicResult(follow);
 			return await MyTask;
 		}
 
@@ -221,10 +221,10 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		public void Dispose()
 		{
 			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-			Dispose(disposing: true);
+			this.Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
 
-		~MyTaskSource() => Dispose(disposing: false);
+		~MyTaskSource() => this.Dispose(disposing: false);
 	}
 }

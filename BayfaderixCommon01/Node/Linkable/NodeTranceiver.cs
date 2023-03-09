@@ -11,7 +11,7 @@
 		{
 			var link = new ItemInstantTransferLink(this, sink);
 			await sink.Link(link).ConfigureAwait(_configureAwait);
-			await Link(link).ConfigureAwait(_configureAwait);
+			await this.Link(link).ConfigureAwait(_configureAwait);
 		}
 
 		public Task Link(INodeLink link)
@@ -24,7 +24,7 @@
 		{
 			if (_outputLinks.Find(x => x.IsThisPair(this, sink)) is var link == default)
 				return;
-			await UnLink(link).ConfigureAwait(_configureAwait);
+			await this.UnLink(link).ConfigureAwait(_configureAwait);
 			await sink.UnLink(link).ConfigureAwait(_configureAwait);
 		}
 

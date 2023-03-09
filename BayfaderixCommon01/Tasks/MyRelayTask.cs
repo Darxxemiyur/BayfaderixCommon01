@@ -45,7 +45,7 @@
 		/// <summary>
 		/// The cancellable relay task.
 		/// </summary>
-		public Task<T> TheTask => Encapsulate();
+		public Task<T> TheTask => this.Encapsulate();
 
 		private MyRelayTask(CancellationToken token = default, bool configureAwait = false)
 		{
@@ -71,7 +71,7 @@
 		private async Task<T> Encapsulate()
 		{
 			await using (var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
-				_innerWork ??= SecureThingy();
+				_innerWork ??= this.SecureThingy();
 
 			return await _innerWork.ConfigureAwait(_configureAwait);
 		}

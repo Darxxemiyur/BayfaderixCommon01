@@ -19,6 +19,6 @@
 			_context.Post(x => base.TryExecuteTask(task), null);
 		}
 
-		protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => Current == this && TryExecuteTask(task);
+		protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => Current == this && this.TryExecuteTask(task);
 	}
 }
