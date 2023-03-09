@@ -25,25 +25,25 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		public async Task<BlockAsyncLock> BlockAsyncLock(CancellationToken token = default, bool configureAwait = false)
 		{
 			if (_disposedValue)
-				throw new ObjectDisposedException(GetType().Name);
-			await AsyncLock(token).ConfigureAwait(_configureAwait);
+				throw new ObjectDisposedException(this.GetType().Name);
+			await this.AsyncLock(token).ConfigureAwait(_configureAwait);
 			return new BlockAsyncLock(this, configureAwait);
 		}
 
 		public BlockAsyncLock BlockLock(bool configureAwait = false)
 		{
 			if (_disposedValue)
-				throw new ObjectDisposedException(GetType().Name);
-			Lock();
+				throw new ObjectDisposedException(this.GetType().Name);
+			this.Lock();
 			return new BlockAsyncLock(this, configureAwait);
 		}
 
-		public Task AsyncUnlock() => MyTaskExtensions.RunOnScheduler(Unlock);
+		public Task AsyncUnlock() => MyTaskExtensions.RunOnScheduler(this.Unlock);
 
 		public void Unlock()
 		{
 			if (_disposedValue)
-				throw new ObjectDisposedException(GetType().Name);
+				throw new ObjectDisposedException(this.GetType().Name);
 			_lock.Release();
 		}
 
@@ -59,11 +59,11 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			_disposedValue = true;
 		}
 
-		~AsyncLocker() => Dispose(false);
+		~AsyncLocker() => this.Dispose(false);
 
 		public void Dispose()
 		{
-			Dispose(disposing: true);
+			this.Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
 	}

@@ -31,7 +31,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 
 		public static Task<TResult?> RunOnScheduler<TResult>(this Func<TResult?> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => Task.FromResult(func()), token, scheduler);
 
-		public static Task<TResult?> RunOnScheduler<TResult>(this Func<Task<TResult?>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, scheduler = GetScheduler(scheduler)).Unwrap().ContinueWith(x => x.Result, token, default, scheduler);
+		public static Task<TResult?> RunOnScheduler<TResult>(this Func<Task<TResult?>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, GetScheduler(scheduler)).Unwrap();
 
 		public static IEnumerable<Task> RunOnScheduler(this IEnumerable<IAsyncRunnable> runnables, CancellationToken token = default, TaskScheduler? scheduler = default) => runnables.Select(x => RunOnScheduler(x, token, scheduler));
 
@@ -43,9 +43,9 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 
 		public static Task RunOnScheduler(this Func<CancellationToken, Task> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => func(token), token, scheduler);
 
-		public static Task RunOnScheduler(this Action func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, scheduler = GetScheduler(scheduler)).ContinueWith(x => { }, token, default, scheduler);
+		public static Task RunOnScheduler(this Action func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, GetScheduler(scheduler));
 
-		public static Task RunOnScheduler(this Func<Task> func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, scheduler = GetScheduler(scheduler)).Unwrap().ContinueWith(x => { }, token, default, scheduler);
+		public static Task RunOnScheduler(this Func<Task> func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, GetScheduler(scheduler)).Unwrap();
 
 		public static Task MyContinueWith(this Task func, Action<Task> act, TaskScheduler? scheduler = default) => func.ContinueWith(act, GetScheduler(scheduler));
 

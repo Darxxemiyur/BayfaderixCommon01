@@ -13,8 +13,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 			_myTaskSchedulerSource = new();
 			_myTaskFactorySource = new();
 			_tasksToDo = new();
-			_mainThread = new Thread(Spin);
-			Post((x) => {
+			_mainThread = new Thread(this.Spin);
+			this.Post((x) => {
 				var ts = TaskScheduler.FromCurrentSynchronizationContext();
 				var tf = new TaskFactory(ts);
 				MyTaskScheduler = ts;

@@ -44,24 +44,20 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		public async Task<T> GetData(CancellationToken token = default)
 		{
-			Task<T> result = null;
+			LinkedListNode<Task<T>> result;
 
 			await using (var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
-			{
-				var node = _chain.First;
-				result = node.Value;
-				_chain.Remove(node);
-			}
+				result = _chain.First;
 
 			using var revert = new MyTaskSource<T>(token);
 
-			var either = await Task.WhenAny(result, revert.MyTask).ConfigureAwait(_configureAwait);
+			var either = await Task.WhenAny(result.Value, revert.MyTask).ConfigureAwait(_configureAwait);
 
-			if (either == revert.MyTask)
+			if (either == result.Value)
 			{
 				await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
-				_chain.AddFirst(result);
-				await revert.MyTask.ConfigureAwait(_configureAwait);
+				if (result.List != null)
+					_chain.Remove(result);
 			}
 
 			return await either.ConfigureAwait(_configureAwait);
@@ -86,21 +82,21 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		public void Dispose()
 		{
-			Dispose(true);
+			this.Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
 		private async IAsyncEnumerable<T> AsAsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
-			while (await this.HasAny() && cancellationToken.IsCancellationRequested)
+			while (await this.HasAny() && !cancellationToken.IsCancellationRequested)
 				yield return await this.GetData(cancellationToken);
 		}
 
-		public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => AsAsyncEnumerable(cancellationToken).GetAsyncEnumerator(cancellationToken);
+		public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this.AsAsyncEnumerable(cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(Dispose));
+		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(this.Dispose));
 
-		~FIFOFBACollection() => Dispose(false);
+		~FIFOFBACollection() => this.Dispose(false);
 	}
 
 	/// <summary>
@@ -135,10 +131,10 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 		public void Dispose()
 		{
-			Dispose(true);
+			this.Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
-		~FIFOFBACollection() => Dispose(false);
+		~FIFOFBACollection() => this.Dispose(false);
 	}
 }

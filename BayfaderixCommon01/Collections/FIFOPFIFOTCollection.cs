@@ -31,7 +31,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 
 			var rem = _receivers.Dequeue();
 			if (!await rem.TrySetResultAsync(item).ConfigureAwait(_configureAwait))
-				await InnerPlaceItem(item).ConfigureAwait(_configureAwait);
+				await this.InnerPlaceItem(item).ConfigureAwait(_configureAwait);
 		}
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		public async Task PlaceItem(T item)
 		{
 			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
-			await InnerPlaceItem(item).ConfigureAwait(_configureAwait);
+			await this.InnerPlaceItem(item).ConfigureAwait(_configureAwait);
 		}
 
 		/// <summary>
@@ -69,12 +69,12 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		private async Task<Task<T>> InnerGetItem(CancellationToken token = default)
 		{
 			if (_queue.Count <= 0)
-				return Enquer(token);
+				return this.Enquer(token);
 
 			var item = _queue.Dequeue();
 
 			if (!token.IsCancellationRequested)
-				return item == null ? await InnerGetItem(token).ConfigureAwait(_configureAwait) : Task.FromResult(item);
+				return item == null ? await this.InnerGetItem(token).ConfigureAwait(_configureAwait) : Task.FromResult(item);
 
 			_queue.Enqueue(item);
 
@@ -89,7 +89,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			return await itemReceiver.MyTask.ConfigureAwait(_configureAwait);
 		}
 
-		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(Dispose));
+		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(this.Dispose));
 
 		/// <summary>
 		/// Get item. If there is any, return it immediately, if not, take a place in the queue.
@@ -100,7 +100,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			Task<T> itemGet;
 			await using (var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
-				itemGet = await InnerGetItem(token).ConfigureAwait(_configureAwait);
+				itemGet = await this.InnerGetItem(token).ConfigureAwait(_configureAwait);
 
 			return await itemGet.ConfigureAwait(_configureAwait);
 		}
@@ -118,11 +118,11 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			_disposedValue = true;
 		}
 
-		~FIFOPFIFOTCollection() => Dispose(disposing: false);
+		~FIFOPFIFOTCollection() => this.Dispose(disposing: false);
 
 		public void Dispose()
 		{
-			Dispose(disposing: true);
+			this.Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
 	}
