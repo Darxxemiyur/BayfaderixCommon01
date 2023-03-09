@@ -40,7 +40,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// </summary>
 		/// <param name="items"></param>
 		/// <returns></returns>
-		public async Task PlaceLast(IAsyncEnumerable<T> items) => await PlaceLast(await items.ToEnumerableAsync());
+		public async Task PlaceLast(IAsyncEnumerable<T> items) => await this.PlaceLast(await items.ToEnumerableAsync());
 
 		/// <summary>
 		/// Appends items to the list
@@ -72,7 +72,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// </summary>
 		/// <param name="items"></param>
 		/// <returns></returns>
-		public async Task PlaceFirst(IAsyncEnumerable<T> items) => await PlaceFirst(await items.ToEnumerableAsync());
+		public async Task PlaceFirst(IAsyncEnumerable<T> items) => await this.PlaceFirst(await items.ToEnumerableAsync());
 
 		/// <summary>
 		/// Prepends items to the list
@@ -109,8 +109,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		/// <returns></returns>
 		public async Task<IEnumerable<T>> GetAllSafe(CancellationToken token = default)
 		{
-			await UntilPlaced(token).ConfigureAwait(_configureAwait);
-			return await GetAll().ConfigureAwait(_configureAwait);
+			await this.UntilPlaced(token).ConfigureAwait(_configureAwait);
+			return await this.GetAll().ConfigureAwait(_configureAwait);
 		}
 
 		/// <summary>
@@ -149,23 +149,23 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			_disposedValue = true;
 		}
 
-		~FIFOPTACollection() => Dispose(disposing: false);
+		~FIFOPTACollection() => this.Dispose(disposing: false);
 
 		public void Dispose()
 		{
 			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-			Dispose(disposing: true);
+			this.Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
 
 		private async IAsyncEnumerable<T> AsAsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
-			foreach (var item in await GetAllSafe(cancellationToken))
+			foreach (var item in await this.GetAllSafe(cancellationToken))
 				yield return item;
 		}
 
-		public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => AsAsyncEnumerable(cancellationToken).GetAsyncEnumerator(cancellationToken);
+		public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this.AsAsyncEnumerable(cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(Dispose));
+		public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(this.Dispose));
 	}
 }

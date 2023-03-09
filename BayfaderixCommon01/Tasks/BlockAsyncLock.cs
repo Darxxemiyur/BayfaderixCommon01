@@ -12,7 +12,7 @@
 
 		public BlockAsyncLock(AsyncLocker tlock, bool configureAwait = false) => (_lock, _configureAwait) = (tlock, configureAwait);
 
-		~BlockAsyncLock() => TryToRelease();
+		~BlockAsyncLock() => this.TryToRelease();
 
 		private void TryToRelease()
 		{
@@ -32,8 +32,8 @@
 			await _lock.AsyncUnlock().ConfigureAwait(_configureAwait);
 		}
 
-		public void Dispose() => TryToRelease();
+		public void Dispose() => this.TryToRelease();
 
-		public ValueTask DisposeAsync() => new(TryToReleaseAsync());
+		public ValueTask DisposeAsync() => new(this.TryToReleaseAsync());
 	}
 }

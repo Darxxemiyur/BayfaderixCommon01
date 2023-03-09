@@ -13,7 +13,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Node.Network
 		/// </summary>
 		/// <param name="payload"></param>
 		/// <returns></returns>
-		StepInfo GetStartingInstruction(object? payload) => GetStartingInstruction();
+		StepInfo GetStartingInstruction(object? payload) => this.GetStartingInstruction();
 
 		/// <summary>
 		/// Handler of step's result
