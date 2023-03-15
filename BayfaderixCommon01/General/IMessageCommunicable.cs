@@ -22,7 +22,7 @@
 		/// <summary>
 		/// Communicate instance an object.
 		/// </summary>
-		/// <returns>True if instance has accepted and understood the message. False otherwise.</returns>
+		/// <returns>Tell result.</returns>
 		TellResult TellInternal(TellMessage message);
 
 		/// <summary>
@@ -36,14 +36,15 @@
 		/// <summary>
 		/// Communicate instance an object asynchroniously.
 		/// </summary>
-		/// <returns>True if instance has accepted and understood the message. False otherwise.</returns>
+		/// <returns>Awaitable tell result.</returns>
 		Task<TellResult> TellInternalAsync(TellMessage message);
 
 		/// <summary>
 		/// Communicate instance an object asynchroniously.
 		/// </summary>
 		/// <returns>
-		/// Procedural communication channel that is up to the session channel instance to implement.
+		/// Procedural asynchronous communication channel that is up to the session channel instance
+		/// to implement.
 		/// </returns>
 		IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(TellMessage message);
 	}
