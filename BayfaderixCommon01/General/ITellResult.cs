@@ -11,12 +11,14 @@
 		int Code {
 			get;
 		}
+
 		/// <summary>
 		/// Custom message note.
 		/// </summary>
 		string? Note {
 			get;
 		}
+
 		/// <summary>
 		/// The message custom result.
 		/// </summary>

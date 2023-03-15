@@ -11,6 +11,7 @@
 		string? Note {
 			get;
 		}
+
 		/// <summary>
 		/// The message custom message.
 		/// </summary>
