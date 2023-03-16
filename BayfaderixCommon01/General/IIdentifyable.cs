@@ -4,7 +4,7 @@
 	/// Provides a wrapper for a type that should be identifyable.
 	/// </summary>
 	/// <typeparam name="TIdentifyable">A wrappable object.</typeparam>
-	public interface IIdentifyable<TIdentifyable>
+	public interface IIdentifyable<out TIdentifyable> : IMetaIdentity
 	{
 		/// <summary>
 		/// Identity.
@@ -27,6 +27,15 @@
 		/// <returns>
 		/// True if they are equal according to the implementation of the interface. False otherwise.
 		/// </returns>
-		bool Equals(IIdentifyable<TIdentifyable> to);
+		bool Equals<TId>(IIdentifyable<TId> to);
+
+		/// <summary>
+		/// Compares two instances for equality.
+		/// </summary>
+		/// <param name="to"></param>
+		/// <returns>
+		/// True if they are equal according to the implementation of the interface. False otherwise.
+		/// </returns>
+		bool Equals(object to);
 	}
 }
