@@ -93,6 +93,7 @@
 			}
 			catch (TaskCanceledException e)
 			{
+				//TODO: Fix this. Make code look into task result before assuming the awaited task was cancelled, and not any nested it was awaing was.
 				throw new MyRelayTaskException(e);
 			}
 		}

@@ -26,6 +26,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			}
 			catch (TaskCanceledException)
 			{
+				//TODO: Fix this. Make code look into task result before assuming the awaited task was cancelled, and not any nested it was awaing was.
 				await this.TrySetCanceledAsync();
 			}
 			catch (Exception e)
@@ -138,6 +139,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			}
 			catch (TaskCanceledException)
 			{
+				//TODO: Fix this. Make code look into task result before assuming the awaited task was cancelled, and not any nested it was awaing was.
 				await this.TrySetCanceledAsync();
 			}
 			catch (Exception e)
