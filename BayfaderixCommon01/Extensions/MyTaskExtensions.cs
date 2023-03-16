@@ -6,13 +6,13 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 	{
 		public static async Task<TResult?> AsType<TInput, TResult>(this Task<TInput> task, bool configureAwait = false) where TInput : class where TResult : class => await task.ConfigureAwait(configureAwait) as TResult;
 
-		public static IEnumerable<Task<TResult?>> RunOnScheduler<TResult>(this IEnumerable<Func<CancellationToken, Task<TResult?>>> funcs, CancellationToken token = default, TaskScheduler? scheduler = default) => funcs.Select(func => RunOnScheduler(() => func(token), token, scheduler));
+		public static IEnumerable<Task<TResult>> RunOnScheduler<TResult>(this IEnumerable<Func<CancellationToken, Task<TResult>>> funcs, CancellationToken token = default, TaskScheduler? scheduler = default) => funcs.Select(func => RunOnScheduler(() => func(token), token, scheduler));
 
-		public static IEnumerable<Task<TResult?>> RunOnScheduler<TResult>(this IEnumerable<Func<Task<TResult?>>> funcs, CancellationToken token = default, TaskScheduler? scheduler = default) => funcs.Select(func => RunOnScheduler(() => func(), token, scheduler));
+		public static IEnumerable<Task<TResult>> RunOnScheduler<TResult>(this IEnumerable<Func<Task<TResult>>> funcs, CancellationToken token = default, TaskScheduler? scheduler = default) => funcs.Select(func => RunOnScheduler(() => func(), token, scheduler));
 
-		public static Task<TResult?> RunOnScheduler<TResult>(this Func<CancellationToken, TResult?> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => func(token), token, scheduler);
+		public static Task<TResult> RunOnScheduler<TResult>(this Func<CancellationToken, TResult> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => func(token), token, scheduler);
 
-		public static Task<TResult?> RunOnScheduler<TResult>(this Func<CancellationToken, Task<TResult?>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => func(token), token, scheduler);
+		public static Task<TResult> RunOnScheduler<TResult>(this Func<CancellationToken, Task<TResult>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => func(token), token, scheduler);
 
 		public static TaskScheduler GetScheduler(TaskScheduler? suggested = default)
 		{
@@ -29,9 +29,9 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Extensions
 			return TaskScheduler.Current;
 		}
 
-		public static Task<TResult?> RunOnScheduler<TResult>(this Func<TResult?> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => Task.FromResult(func()), token, scheduler);
+		public static Task<TResult> RunOnScheduler<TResult>(this Func<TResult> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => Task.FromResult(func()), token, scheduler);
 
-		public static Task<TResult?> RunOnScheduler<TResult>(this Func<Task<TResult?>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, GetScheduler(scheduler)).Unwrap();
+		public static Task<TResult> RunOnScheduler<TResult>(this Func<Task<TResult>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => Task.Factory.StartNew(func, token, TaskCreationOptions.None, GetScheduler(scheduler)).Unwrap();
 
 		public static IEnumerable<Task> RunOnScheduler(this IEnumerable<IAsyncRunnable> runnables, CancellationToken token = default, TaskScheduler? scheduler = default) => runnables.Select(x => RunOnScheduler(x, token, scheduler));
 
