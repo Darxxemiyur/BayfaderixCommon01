@@ -13,7 +13,9 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 			_myTaskSchedulerSource = new();
 			_myTaskFactorySource = new();
 			_tasksToDo = new();
-			_mainThread = new Thread(this.Spin);
+			_mainThread = new Thread(this.Spin) {
+				IsBackground = true,
+			};
 			this.Post((x) => {
 				var ts = TaskScheduler.FromCurrentSynchronizationContext();
 				var tf = new TaskFactory(ts);
@@ -59,11 +61,9 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 		private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasksToDo;
 		private readonly LinkedList<(SendOrPostCallback, object?)> _tasks;
 
-		private void Spin(object contextO)
+		private void Spin(object? context)
 		{
-			var context = contextO as MySingleThreadSyncContext;
-			SetSynchronizationContext(context);
-
+			SetSynchronizationContext(context as MySingleThreadSyncContext);
 			while (true)
 			{
 				while (_tasksToDo.TryTake(out var item))
