@@ -6,7 +6,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 	{
 		private readonly Thread _mainThread;
 
-		public MySingleThreadSyncContext()
+		public MySingleThreadSyncContext(ThreadPriority threadPriority = ThreadPriority.Normal)
 		{
 			_handle = new(false, EventResetMode.AutoReset);
 			_tasks = new();
@@ -15,6 +15,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 			_tasksToDo = new();
 			_mainThread = new Thread(this.Spin) {
 				IsBackground = true,
+				Priority = threadPriority
 			};
 			this.Post((x) => {
 				var ts = TaskScheduler.FromCurrentSynchronizationContext();
