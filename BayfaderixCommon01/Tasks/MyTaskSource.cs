@@ -24,9 +24,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 				await mimic;
 				await this.TrySetResultAsync();
 			}
-			catch (TaskCanceledException)
+			catch (TaskCanceledException) when (mimic.IsCanceled)
 			{
-				//TODO: Fix this. Make code look into task result before assuming the awaited task was cancelled, and not any nested it was awaing was.
 				await this.TrySetCanceledAsync();
 			}
 			catch (Exception e)
@@ -96,7 +95,7 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			_inner = _icancel.Token;
 		}
 
-		private Task<T> _innerTask;
+		private Task<T>? _innerTask;
 		private bool disposedValue;
 
 		public Task<T> MyTask => this.InSecure();
@@ -123,9 +122,13 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			if (result.Item1)
 				return (T)result.Item2;
 
+#pragma warning disable CS8603 // Possible null reference return.
 			//Do a very very bad thing if we don't want exceptions
 			if (!_throwOnException)
+				//That's a new todo.
+				//TODO: Either get rid of _throwOnException in favor of always throwing if something happens, or change signature.
 				return default;
+#pragma warning restore CS8603 // Possible null reference return.
 
 			//Else throw exception.
 			throw new MyTaskSourceException((Exception)result.Item2);
@@ -137,9 +140,8 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			{
 				await this.TrySetResultAsync(await mimic);
 			}
-			catch (TaskCanceledException)
+			catch (TaskCanceledException) when (mimic.IsCanceled)
 			{
-				//TODO: Fix this. Make code look into task result before assuming the awaited task was cancelled, and not any nested it was awaing was.
 				await this.TrySetCanceledAsync();
 			}
 			catch (Exception e)
@@ -158,14 +160,20 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			using var _ = _lock.BlockLock();
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+			//The result is not null.
 			return !_inner.IsCancellationRequested && _source.TrySetResult((true, result));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		}
 
 		public bool TrySetException(Exception result)
 		{
 			using var _ = _lock.BlockLock();
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+			//The right slot of tuple is not null only if _throwOnException is true.
 			return !_inner.IsCancellationRequested && _source.TrySetResult((false, _throwOnException ? result : null));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		}
 
 		public bool TrySetCanceled()
@@ -175,7 +183,10 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			if (!_inner.IsCancellationRequested)
 				_cancel.Cancel();
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+			//The right slot of tuple is not null only if _throwOnException is true.
 			return _inner.IsCancellationRequested && _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		}
 
 		/// <summary>
@@ -187,14 +198,20 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 		{
 			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+			//The result is not null.
 			return !_inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((true, result)));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		}
 
 		public async Task<bool> TrySetExceptionAsync(Exception result)
 		{
 			await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+			//The right slot of tuple is not null only if _throwOnException is true.
 			return !_inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((false, _throwOnException ? result : null)));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		}
 
 		public async Task<bool> TrySetCanceledAsync()
@@ -203,7 +220,10 @@ namespace Name.Bayfaderix.Darxxemiyur.Common
 			if (!_inner.IsCancellationRequested)
 				_cancel.Cancel();
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+			//The right slot of tuple is not null only if _throwOnException is true.
 			return _inner.IsCancellationRequested && await MyTaskExtensions.RunOnScheduler(() => _source.TrySetResult((false, _throwOnException ? new TaskCanceledException(null, null, _inner) : null)));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		}
 
 		protected virtual void Dispose(bool disposing)

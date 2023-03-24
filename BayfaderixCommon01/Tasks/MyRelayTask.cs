@@ -47,7 +47,11 @@
 		/// </summary>
 		public Task<T> TheTask => this.Encapsulate();
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+		// _callable is not null because this private constructor is called on all public constructors.
 		private MyRelayTask(CancellationToken token = default, bool configureAwait = false)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
 			_inner = new(token);
 			_lock = new();
@@ -91,9 +95,8 @@
 
 				return await task.ConfigureAwait(_configureAwait);
 			}
-			catch (TaskCanceledException e)
+			catch (Exception e)
 			{
-				//TODO: Fix this. Make code look into task result before assuming the awaited task was cancelled, and not any nested it was awaing was.
 				throw new MyRelayTaskException(e);
 			}
 		}
