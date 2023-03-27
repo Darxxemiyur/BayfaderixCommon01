@@ -24,15 +24,16 @@ public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 
 	private async Task InnerPlaceItem(T item)
 	{
-		if (_receivers.Count <= 0)
+		if (_receivers.Count > 0)
+		{
+			var rem = _receivers.Dequeue();
+			if (!await rem.TrySetResultAsync(item).ConfigureAwait(_configureAwait))
+				await this.InnerPlaceItem(item).ConfigureAwait(_configureAwait);
+		}
+		else
 		{
 			_queue.Enqueue(item);
-			return;
 		}
-
-		var rem = _receivers.Dequeue();
-		if (!await rem.TrySetResultAsync(item).ConfigureAwait(_configureAwait))
-			await this.InnerPlaceItem(item).ConfigureAwait(_configureAwait);
 	}
 
 	/// <summary>
