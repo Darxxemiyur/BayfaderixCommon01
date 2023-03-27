@@ -17,5 +17,9 @@
 		TaskFactory? MyTaskFactory {
 			get;
 		}
+
+		void Send(SendOrPostCallback d, object? state);
+		void Post(SendOrPostCallback d, object? state);
+		Task Place(AsyncOpBuilder asyncOp);
 	}
 }

@@ -77,5 +77,10 @@ namespace Name.Bayfaderix.Darxxemiyur.Common.Async
 				_handle.WaitOne();
 			}
 		}
+
+		public async Task Place(AsyncOpBuilder asyncOp)
+		{
+
+		}
 	}
 }

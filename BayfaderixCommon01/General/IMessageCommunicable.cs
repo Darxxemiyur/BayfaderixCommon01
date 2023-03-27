@@ -22,28 +22,28 @@
 		/// <summary>
 		/// Communicate instance an object.
 		/// </summary>
-		/// <returns>Tell result.</returns>
+		/// <returns>The tell result.</returns>
 		TellResult TellInternal(TellMessage message);
 
 		/// <summary>
 		/// Communicate instance an object.
 		/// </summary>
 		/// <returns>
-		/// Procedural communication channel that is up to the session channel instance to implement.
+		/// The procedural communication channel that is up to the session channel instance to implement.
 		/// </returns>
 		IEnumerable<TellResult> TellInternalProcedurally(TellMessage message);
 
 		/// <summary>
 		/// Communicate instance an object asynchroniously.
 		/// </summary>
-		/// <returns>Awaitable tell result.</returns>
+		/// <returns>The awaitable tell result.</returns>
 		Task<TellResult> TellInternalAsync(TellMessage message);
 
 		/// <summary>
 		/// Communicate instance an object asynchroniously.
 		/// </summary>
 		/// <returns>
-		/// Procedural asynchronous communication channel that is up to the session channel instance
+		/// The procedural asynchronous communication channel that is up to the session channel instance
 		/// to implement.
 		/// </returns>
 		IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(TellMessage message);

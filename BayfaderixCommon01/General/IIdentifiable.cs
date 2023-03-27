@@ -7,14 +7,14 @@
 	public interface IIdentifiable<out TIdentifyable> : IMetaIdentity
 	{
 		/// <summary>
-		/// Identity.
+		/// Identity of the IIdentifiable. Can be null.
 		/// </summary>
 		IIdentity? Identity {
 			get;
 		}
 
 		/// <summary>
-		/// The contained type.
+		/// The contained instance.
 		/// </summary>
 		TIdentifyable? Identifyable {
 			get;
@@ -25,7 +25,8 @@
 		/// </summary>
 		/// <param name="to"></param>
 		/// <returns>
-		/// True if they are equal according to the implementation of the interface. False otherwise.
+		/// True if they are equal according to the istance's type's implementation of the
+		/// interface. False otherwise.
 		/// </returns>
 		bool Equals<TId>(IIdentifiable<TId> to);
 
