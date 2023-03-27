@@ -1,11 +1,10 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable
-{
-	public class DescriptioningData<T>
-	{
-		public T Data {
-			get;
-		}
+﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
 
-		public DescriptioningData(T data) => Data = data;
+public class DescriptioningData<T>
+{
+	public T Data {
+		get;
 	}
+
+	public DescriptioningData(T data) => Data = data;
 }
