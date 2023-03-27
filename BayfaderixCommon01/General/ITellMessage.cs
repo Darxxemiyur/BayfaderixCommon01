@@ -1,22 +1,21 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General
+﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+
+/// <summary>
+/// TellInternally's message interface
+/// </summary>
+public interface ITellMessage
 {
 	/// <summary>
-	/// TellInternally's message interface
+	/// Custom message note.
 	/// </summary>
-	public interface ITellMessage
-	{
-		/// <summary>
-		/// Custom message note.
-		/// </summary>
-		string? Note {
-			get;
-		}
+	string? Note {
+		get;
+	}
 
-		/// <summary>
-		/// The message custom message.
-		/// </summary>
-		object? Message {
-			get;
-		}
+	/// <summary>
+	/// The message custom message.
+	/// </summary>
+	object? Message {
+		get;
 	}
 }

@@ -23,6 +23,7 @@ public class StupidMessageCommunicable : IMessageCommunicable
 	}
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
 	//It is fine since it practically has no overhead.
 	public async IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(TellMessage message)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

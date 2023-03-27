@@ -1,15 +1,14 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General
+﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+
+/// <summary>
+/// Meta(data) identity to identify run-time types.
+/// </summary>
+public interface IMetaIdentity
 {
 	/// <summary>
-	/// Meta(data) identity to identify run-time types.
+	/// Type of the instance.
 	/// </summary>
-	public interface IMetaIdentity
-	{
-		/// <summary>
-		/// Type of the instance.
-		/// </summary>
-		Type Type {
-			get;
-		}
+	Type Type {
+		get;
 	}
 }

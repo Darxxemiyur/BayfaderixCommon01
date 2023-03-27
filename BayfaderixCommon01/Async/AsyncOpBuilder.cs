@@ -1,4 +1,6 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Common.Async;
+﻿using Name.Bayfaderix.Darxxemiyur.Tasks;
+
+namespace Name.Bayfaderix.Darxxemiyur.Async;
 
 public sealed class AsyncOpBuilder
 {
@@ -17,7 +19,7 @@ public sealed class AsyncOpBuilder
 		return TaskScheduler.Current;
 	}
 
-	public static AsyncOpBuilder Get => new AsyncOpBuilder();
+	public static AsyncOpBuilder Get => new();
 	private readonly LinkedList<Func<Task>> _unCancellableTasks;
 	private readonly LinkedList<Func<CancellationToken, Task>> _cancellableTasks;
 	private readonly LinkedList<IAsyncRunnable> _asyncRunnables;
