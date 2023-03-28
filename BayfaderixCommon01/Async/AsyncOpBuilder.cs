@@ -27,6 +27,7 @@ public sealed class AsyncOpBuilder
 	private TaskCreationOptions? _options;
 	private TaskFactory? _factory;
 	private TaskScheduler? _scheduler;
+	private bool _ca;
 
 	public AsyncOpBuilder()
 	{
@@ -151,6 +152,12 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
+	public AsyncOpBuilder WithConfigureAwait(bool configureAwait)
+	{
+		_ca = configureAwait;
+		return this;
+	}
+
 	private async Task RunTasks()
 	{
 		var queue = new LinkedList<Task>();
@@ -170,6 +177,6 @@ public sealed class AsyncOpBuilder
 	{
 		var factory = _factory ?? new TaskFactory(_scheduler);
 
-		await (_options is TaskCreationOptions tco ? factory.StartNew(this.RunTasks, tco) : factory.StartNew(this.RunTasks)).Unwrap();
+		await (_options is TaskCreationOptions tco ? factory.StartNew(this.RunTasks, tco) : factory.StartNew(this.RunTasks)).Unwrap().ConfigureAwait(_ca);
 	}
 }

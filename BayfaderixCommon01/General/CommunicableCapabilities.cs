@@ -12,32 +12,32 @@ public enum CommunicableCapabilities
 	None = 0,
 
 	/// <summary>
-	/// Supports and implements <see cref="IMessageCommunicable.TellInternal(TellMessage)">TellInternal</see>.
+	/// Supports and implements <see cref="IMessageCommunicable.TellInternal(TellMessage)"/>.
 	/// </summary>
 	TellInternal = 1 << 0,
 
 	/// <summary>
-	/// Supports and implements <see cref="IMessageCommunicable.TellInternalProcedurally(TellMessage)(TellMessage)">TellInternalProcedurally</see>.
+	/// Supports and implements <see cref="IMessageCommunicable.TellInternalProcedurally(TellMessage)"/>.
 	/// </summary>
 	TellInternalProcedurally = 1 << 1,
 
 	/// <summary>
-	/// Supports and implements <see cref="IMessageCommunicable.TellInternalAsync(TellMessage)(TellMessage)">TellInternalAsync</see>.
+	/// Supports and implements <see cref="IMessageCommunicable.TellInternalAsync(TellMessage)"/>.
 	/// </summary>
 	TellInternalAsync = 1 << 2,
 
 	/// <summary>
-	/// Supports and implements <see cref="IMessageCommunicable.TellInternalProcedurallyAsync(TellMessage)(TellMessage)">TellInternalProcedurallyAsync</see>.
+	/// Supports and implements <see cref="IMessageCommunicable.TellInternalProcedurallyAsync(TellMessage)"/>.
 	/// </summary>
 	TellInternalProcedurallyAsync = 1 << 3,
 
 	/// <summary>
-	/// Supports and implements <see cref="IMessageCommunicable.Capabilities">Capabilities</see>.
+	/// Supports and implements <see cref="IMessageCommunicable.Capabilities"/>.
 	/// </summary>
 	Capabilities = 1 << 4,
 
 	/// <summary>
-	/// Supports and implements <see cref="IMessageCommunicable.CapabilitiesAsync">CapabilitiesAsync</see>.
+	/// Supports and implements <see cref="IMessageCommunicable.CapabilitiesAsync"/>.
 	/// </summary>
 	CapabilitiesAsync = 1 << 5,
 
