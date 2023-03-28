@@ -20,17 +20,22 @@ public sealed class AsyncOpBuilder
 	}
 
 	public static AsyncOpBuilder Get => new();
+	private readonly LinkedList<Action> _unCancellableActions;
+	private readonly LinkedList<Action<CancellationToken>> _cancellableActions;
 	private readonly LinkedList<Func<Task>> _unCancellableTasks;
 	private readonly LinkedList<Func<CancellationToken, Task>> _cancellableTasks;
 	private readonly LinkedList<IAsyncRunnable> _asyncRunnables;
 	private CancellationToken? _token;
-	private TaskCreationOptions? _options;
+	private TaskCreationOptions? _crOptions;
+	private TaskContinuationOptions? _cnOptions;
 	private TaskFactory? _factory;
 	private TaskScheduler? _scheduler;
 	private bool _ca;
 
 	public AsyncOpBuilder()
 	{
+		_unCancellableActions = new();
+		_cancellableActions = new();
 		_unCancellableTasks = new();
 		_cancellableTasks = new();
 		_asyncRunnables = new();
@@ -38,11 +43,16 @@ public sealed class AsyncOpBuilder
 
 	public AsyncOpBuilder(AsyncOpBuilder oop)
 	{
+		_unCancellableActions = oop._unCancellableActions;
+		_cancellableActions = oop._cancellableActions;
 		_unCancellableTasks = oop._unCancellableTasks;
 		_cancellableTasks = oop._cancellableTasks;
 		_asyncRunnables = oop._asyncRunnables;
 		_factory = oop._factory;
 		_scheduler = oop._scheduler;
+		_crOptions = oop._crOptions;
+		_cnOptions = oop._cnOptions;
+		_ca = oop._ca;
 	}
 
 	public AsyncOpBuilder WithTaskFactory(TaskFactory? factory)
@@ -51,15 +61,9 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
-	public AsyncOpBuilder WithDefaultFactory()
-	{
-		throw new NotImplementedException();
-	}
+	public AsyncOpBuilder WithDefaultFactory() => throw new NotImplementedException();
 
-	public AsyncOpBuilder WithCurrentFactory()
-	{
-		throw new NotImplementedException();
-	}
+	public AsyncOpBuilder WithCurrentFactory() => throw new NotImplementedException();
 
 	public AsyncOpBuilder WithNoFactory()
 	{
@@ -67,21 +71,17 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
-	public AsyncOpBuilder WithScheduler(TaskScheduler scheduler)
+	public AsyncOpBuilder WithScheduler(TaskScheduler? scheduler)
 	{
 		_scheduler = scheduler;
 		return this;
 	}
 
-	public AsyncOpBuilder WithDefaultScheduler()
-	{
-		throw new NotImplementedException();
-	}
+	public AsyncOpBuilder WithScheduler(IMyUnderlyingContext? context) => this.WithScheduler(context?.MyTaskScheduler);
 
-	public AsyncOpBuilder WithCurrentScheduler()
-	{
-		throw new NotImplementedException();
-	}
+	public AsyncOpBuilder WithDefaultScheduler() => this.WithScheduler(GetScheduler());
+
+	public AsyncOpBuilder WithCurrentScheduler() => this.WithScheduler(TaskScheduler.Current);
 
 	/// <summary>
 	/// Attempts to select <see cref="MySingleThreadSyncContext"/>'s Task scheduler. <br/>
@@ -96,7 +96,7 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
-	public AsyncOpBuilder WithCancellationToken(CancellationToken token)
+	public AsyncOpBuilder WithCancellationToken(CancellationToken? token)
 	{
 		_token = token;
 		return this;
@@ -107,6 +107,10 @@ public sealed class AsyncOpBuilder
 		_token = null;
 		return this;
 	}
+
+	public AsyncOpBuilder WithJob(Action action) => this.ChangeUnCancellablesAc(x => x.AddLast(action));
+
+	public AsyncOpBuilder WithJob(Action<CancellationToken> action) => this.ChangeCancellablesAc(x => x.AddLast(action));
 
 	public AsyncOpBuilder WithJob(IAsyncRunnable runnable) => this.ChangeRunnables(x => x.AddLast(runnable));
 
@@ -128,6 +132,18 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
+	public AsyncOpBuilder ChangeUnCancellablesAc(Action<LinkedList<Action>> changer)
+	{
+		changer(_unCancellableActions);
+		return this;
+	}
+
+	public AsyncOpBuilder ChangeCancellablesAc(Action<LinkedList<Action<CancellationToken>>> changer)
+	{
+		changer(_cancellableActions);
+		return this;
+	}
+
 	public AsyncOpBuilder ChangeUnCancellables(Action<LinkedList<Func<Task>>> changer)
 	{
 		changer(_unCancellableTasks);
@@ -140,17 +156,21 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
-	public AsyncOpBuilder WithOptions(TaskCreationOptions? options)
+	public AsyncOpBuilder WithCreationOptions(TaskCreationOptions? options)
 	{
-		_options = options;
+		_crOptions = options;
 		return this;
 	}
 
-	public AsyncOpBuilder WithNoOptions()
+	public AsyncOpBuilder WithContinuationOptions(TaskContinuationOptions? options)
 	{
-		_options = null;
+		_cnOptions = options;
 		return this;
 	}
+
+	public AsyncOpBuilder WithNoCreationOptions() => this.WithCreationOptions(null);
+
+	public AsyncOpBuilder WithNoContinuationOptions() => this.WithContinuationOptions(null);
 
 	public AsyncOpBuilder WithConfigureAwait(bool configureAwait)
 	{
@@ -158,26 +178,29 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
-	private async Task<LinkedList<Task>> RunTasks()
+	public async Task<LinkedList<Task>> Run(CancellationToken token = default)
 	{
 		var queue = new LinkedList<Task>();
-		var token = _token ?? default;
+		var innerToken = _token ?? default;
+		using var ts = CancellationTokenSource.CreateLinkedTokenSource(innerToken, token);
+		var tokenU = ts.Token;
+		var sched = _factory?.Scheduler ?? _scheduler;
+		var cropts = (_crOptions ?? TaskCreationOptions.None) | (_factory?.CreationOptions ?? TaskCreationOptions.None);
+		var cnopts = (_cnOptions ?? TaskContinuationOptions.None) | (_factory?.ContinuationOptions ?? TaskContinuationOptions.None);
+		var factory = new TaskFactory(tokenU, cropts, cnopts, sched);
 
 		foreach (var task in _asyncRunnables)
-			queue.AddLast(task.RunRunnable(token));
+			queue.AddLast(factory.StartNew(() => task.RunRunnable(tokenU), tokenU).Unwrap());
 		foreach (var task in _cancellableTasks)
-			queue.AddLast(task.Invoke(token));
+			queue.AddLast(factory.StartNew(() => task.Invoke(tokenU), tokenU).Unwrap());
 		foreach (var task in _unCancellableTasks)
-			queue.AddLast(task.Invoke());
+			queue.AddLast(factory.StartNew(() => task.Invoke(), tokenU).Unwrap());
+		foreach (var task in _cancellableActions)
+			queue.AddLast(factory.StartNew(() => task.Invoke(tokenU), tokenU));
+		foreach (var task in _unCancellableActions)
+			queue.AddLast(factory.StartNew(() => task.Invoke(), tokenU));
 
-		await Task.WhenAll(queue);
+		await factory.StartNew(() => Task.WhenAll(queue)).Unwrap().ConfigureAwait(_ca);
 		return queue;
-	}
-
-	public async Task Run()
-	{
-		var factory = _factory ?? new TaskFactory(_scheduler);
-
-		await (_options is TaskCreationOptions tco ? factory.StartNew(this.RunTasks, tco) : factory.StartNew(this.RunTasks)).Unwrap().ConfigureAwait(_ca);
 	}
 }
