@@ -4,13 +4,61 @@ namespace Name.Bayfaderix.Darxxemiyur.Async;
 
 public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingContext, IDisposable
 {
+	public CancellationTokenSource Cancellation => _inner.Cancellation;
+
+	private readonly MySingleThreadSyncContextInner _inner;
+
+	public MySingleThreadSyncContext(ThreadPriority threadPriority = ThreadPriority.Normal) => _inner = new MySingleThreadSyncContextInner(threadPriority);
+
+	public Thread MyThread => _inner.MyThread;
+
+	public Task<TaskScheduler> MyTaskSchedulerPromise => _inner.MyTaskSchedulerPromise;
+
+	public Task<TaskFactory> MyTaskFactoryPromise => _inner.MyTaskFactoryPromise;
+
+	public TaskScheduler? MyTaskScheduler => _inner.MyTaskScheduler;
+
+	public TaskFactory? MyTaskFactory => _inner.MyTaskFactory;
+
+	public SynchronizationContext ThisContext => _inner.ThisContext;
+
+	public override void Post(SendOrPostCallback d, object? state) => _inner.Post(d, state);
+
+	public override void Send(SendOrPostCallback d, object? state) => _inner.Send(d, state);
+
+	public Task Place(AsyncOpBuilder asyncOp) => _inner.Place(asyncOp);
+
+	private bool _disposedValue;
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (_disposedValue)
+			return;
+
+		if (disposing)
+			_inner.Dispose();
+
+		_disposedValue = true;
+	}
+
+	~MySingleThreadSyncContext() => this.Dispose(disposing: false);
+
+	public void Dispose()
+	{
+		this.Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+}
+
+internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnderlyingContext, IDisposable
+{
 	private readonly Thread _mainThread;
 
 	public CancellationTokenSource Cancellation {
 		get;
 	}
 
-	public MySingleThreadSyncContext(ThreadPriority threadPriority = ThreadPriority.Normal)
+	public MySingleThreadSyncContextInner(ThreadPriority threadPriority = ThreadPriority.Normal)
 	{
 		Cancellation = new CancellationTokenSource();
 		_handle = new(false, EventResetMode.AutoReset);
@@ -67,11 +115,11 @@ public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingCo
 
 	private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasksToDo;
 	private readonly LinkedList<(SendOrPostCallback, object?)> _tasks;
-	private bool disposedValue;
+	private bool _disposedValue;
 
 	private void Spin(object? context)
 	{
-		SetSynchronizationContext(context as MySingleThreadSyncContext);
+		SetSynchronizationContext(context as MySingleThreadSyncContextInner);
 		while (!Cancellation.IsCancellationRequested)
 		{
 			while (_tasksToDo.TryTake(out var item))
@@ -90,20 +138,20 @@ public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingCo
 
 	protected virtual void Dispose(bool disposing)
 	{
-		if (disposedValue)
+		if (_disposedValue)
 			return;
-		if (disposing)
-		{
-			Cancellation.Cancel();
-			_handle.Set();
-			Cancellation.Dispose();
-			_handle.Dispose();
-		}
+		if (!disposing)
+			return;
 
-		disposedValue = true;
+		Cancellation.Cancel();
+		_handle.Set();
+		Cancellation.Dispose();
+		_handle.Dispose();
+
+		_disposedValue = true;
 	}
 
-	~MySingleThreadSyncContext() => this.Dispose(disposing: false);
+	~MySingleThreadSyncContextInner() => this.Dispose(disposing: false);
 
 	public void Dispose()
 	{

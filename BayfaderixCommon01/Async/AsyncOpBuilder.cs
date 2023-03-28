@@ -158,7 +158,7 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
-	private async Task RunTasks()
+	private async Task<LinkedList<Task>> RunTasks()
 	{
 		var queue = new LinkedList<Task>();
 		var token = _token ?? default;
@@ -171,6 +171,7 @@ public sealed class AsyncOpBuilder
 			queue.AddLast(task.Invoke());
 
 		await Task.WhenAll(queue);
+		return queue;
 	}
 
 	public async Task Run()
