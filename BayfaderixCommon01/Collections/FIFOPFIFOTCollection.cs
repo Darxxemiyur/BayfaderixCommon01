@@ -43,7 +43,7 @@ public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 	/// <returns></returns>
 	public async Task PlaceItem(T item)
 	{
-		await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		await this.InnerPlaceItem(item).ConfigureAwait(_configureAwait);
 	}
 
@@ -53,7 +53,7 @@ public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 	/// <returns></returns>
 	public async Task<bool> AnyItems()
 	{
-		await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		return _queue.Any();
 	}
 
@@ -63,7 +63,7 @@ public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 	/// <returns></returns>
 	public async Task<bool> AnyReceivers()
 	{
-		await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		return _receivers.Any();
 	}
 
@@ -100,7 +100,7 @@ public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 	public async Task<T> GetItem(CancellationToken token = default)
 	{
 		Task<T> itemGet;
-		await using (var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+		await using (var _ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			itemGet = await this.InnerGetItem(token).ConfigureAwait(_configureAwait);
 
 		return await itemGet.ConfigureAwait(_configureAwait);

@@ -23,19 +23,19 @@ public class AsyncSafeVariable<T>
 
 	public async Task SetValue(T value)
 	{
-		await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		_value = value;
 	}
 
 	public async Task SetValue(Func<T, Task<T>> value)
 	{
-		await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		_value = await value(_value).ConfigureAwait(_configureAwait);
 	}
 
 	public async Task<T> GetValue()
 	{
-		await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		var val = _value;
 
 		return val;
@@ -43,7 +43,7 @@ public class AsyncSafeVariable<T>
 
 	public async Task<T> LocklyModValue(Func<T, Task<T>> value)
 	{
-		await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		return _value = await value(_value).ConfigureAwait(_configureAwait);
 	}
 

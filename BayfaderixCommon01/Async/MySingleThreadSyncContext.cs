@@ -2,13 +2,19 @@
 
 namespace Name.Bayfaderix.Darxxemiyur.Async;
 
-public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingContext
+public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingContext, IDisposable
 {
 	private readonly Thread _mainThread;
 
+	public CancellationTokenSource Cancellation {
+		get;
+	}
+
 	public MySingleThreadSyncContext(ThreadPriority threadPriority = ThreadPriority.Normal)
 	{
+		Cancellation = new CancellationTokenSource();
 		_handle = new(false, EventResetMode.AutoReset);
+		Cancellation.Token.Register(() => _handle.Set());
 		_tasks = new();
 		_myTaskSchedulerSource = new();
 		_myTaskFactorySource = new();
@@ -61,11 +67,12 @@ public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingCo
 
 	private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasksToDo;
 	private readonly LinkedList<(SendOrPostCallback, object?)> _tasks;
+	private bool disposedValue;
 
 	private void Spin(object? context)
 	{
 		SetSynchronizationContext(context as MySingleThreadSyncContext);
-		while (true)
+		while (!Cancellation.IsCancellationRequested)
 		{
 			while (_tasksToDo.TryTake(out var item))
 				_tasks.AddLast(item);
@@ -74,11 +81,33 @@ public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingCo
 				d?.Invoke(o);
 
 			_tasks.Clear();
-			_handle.WaitOne();
+			if (_tasksToDo.IsEmpty)
+				_handle.WaitOne();
 		}
 	}
 
-	public async Task Place(AsyncOpBuilder asyncOp)
+	public async Task Place(AsyncOpBuilder asyncOp) => throw new NotImplementedException();
+
+	protected virtual void Dispose(bool disposing)
 	{
+		if (disposedValue)
+			return;
+		if (disposing)
+		{
+			Cancellation.Cancel();
+			_handle.Set();
+			Cancellation.Dispose();
+			_handle.Dispose();
+		}
+
+		disposedValue = true;
+	}
+
+	~MySingleThreadSyncContext() => this.Dispose(disposing: false);
+
+	public void Dispose()
+	{
+		this.Dispose(disposing: true);
+		GC.SuppressFinalize(this);
 	}
 }

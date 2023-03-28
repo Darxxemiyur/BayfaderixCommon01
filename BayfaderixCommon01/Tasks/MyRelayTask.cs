@@ -74,7 +74,7 @@ public class MyRelayTask<T>
 
 	private async Task<T> Encapsulate()
 	{
-		await using (var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+		await using (var _ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			_innerWork ??= this.SecureThingy();
 
 		return await _innerWork.ConfigureAwait(_configureAwait);
