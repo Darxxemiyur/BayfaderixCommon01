@@ -7,6 +7,11 @@
 public enum CommunicableCapabilities
 {
 	/// <summary>
+	/// Ask <see cref="IMessageCommunicable.CapabilitiesAsync"/> for supported comm ways.
+	/// </summary>
+	AskAsyncCapabilities = 1 << 8,
+
+	/// <summary>
 	/// Communicable supports no interactions.
 	/// </summary>
 	None = 0,
@@ -42,16 +47,26 @@ public enum CommunicableCapabilities
 	CapabilitiesAsync = 1 << 5,
 
 	/// <summary>
-	/// Supports and implements everything these do: <see cref="TellInternal"/>, <see
-	/// cref="TellInternalProcedurally"/>, <see cref="Capabilities"/>.
+	/// Supports and implements <see cref="IMessageCommunicable.TellInternalProcedurally(IEnumerable{TellMessage})"/>.
 	/// </summary>
-	AllSync = TellInternal | TellInternalProcedurally | Capabilities,
+	TellInternalProcedurallyFromProcedural = 1 << 6,
+
+	/// <summary>
+	/// Supports and implements <see cref="IMessageCommunicable.TellInternalProcedurallyAsync(IAsyncEnumerable{TellMessage})"/>.
+	/// </summary>
+	TellInternalProcedurallyFromProceduralAsync = 1 << 7,
+
+	/// <summary>
+	/// Supports and implements everything these do: <see cref="TellInternal"/>, <see
+	/// cref="TellInternalProcedurally"/>, <see cref="Capabilities"/>, <see cref="TellInternalProcedurallyFromProcedural"/>.
+	/// </summary>
+	AllSync = TellInternal | TellInternalProcedurally | Capabilities | TellInternalProcedurallyFromProcedural,
 
 	/// <summary>
 	/// Supports and implements everything these do: <see cref="TellInternalAsync"/>, <see
-	/// cref="TellInternalProcedurallyAsync"/>, <see cref="CapabilitiesAsync"/>.
+	/// cref="TellInternalProcedurallyAsync"/>, <see cref="CapabilitiesAsync"/>, <see cref="TellInternalProcedurallyFromProceduralAsync"/>.
 	/// </summary>
-	AllAsync = TellInternalAsync | TellInternalProcedurallyAsync | CapabilitiesAsync,
+	AllAsync = TellInternalAsync | TellInternalProcedurallyAsync | CapabilitiesAsync | TellInternalProcedurallyFromProceduralAsync,
 
 	/// <summary>
 	/// Supports and implements everything these do: <see cref="AllSync"/> and <see cref="AllAsync"/>.
