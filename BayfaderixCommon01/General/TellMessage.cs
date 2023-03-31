@@ -16,5 +16,5 @@ public record struct TellMessage(ITellMessage? OriginalMessage) : ITellMessage
 	/// <summary>
 	/// The message custom message.
 	/// </summary>
-	public object? Message => OriginalMessage?.Message;
+	public IIdentifiable<object?>? Message => OriginalMessage?.Message;
 }

@@ -22,7 +22,7 @@ public interface ITellResult
 	/// <summary>
 	/// The message custom result.
 	/// </summary>
-	object? Result {
+	IIdentifiable<object?>? Result {
 		get;
 	}
 }
