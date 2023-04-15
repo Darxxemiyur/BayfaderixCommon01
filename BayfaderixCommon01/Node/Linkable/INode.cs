@@ -1,22 +1,21 @@
-using Name.Bayfaderix.Darxxemiyur.Common;
+using Name.Bayfaderix.Darxxemiyur.Tasks;
 
-namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable
+namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
+
+/// <summary>
+/// Node interface that describes what it is capable of.
+/// </summary>
+public interface INode : IAsyncRunnable
 {
-	/// <summary>
-	/// Node interface that describes what it is capable of.
-	/// </summary>
-	public interface INode : IAsyncRunnable
-	{
-		bool IsSink {
-			get;
-		}
+	bool IsSink {
+		get;
+	}
 
-		bool IsSource {
-			get;
-		}
+	bool IsSource {
+		get;
+	}
 
-		bool IsBi {
-			get;
-		}
+	bool IsBi {
+		get;
 	}
 }

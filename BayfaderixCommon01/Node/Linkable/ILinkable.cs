@@ -1,9 +1,8 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable
-{
-	public interface ILinkable
-	{
-		Task Link(INodeLink link);
+﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
 
-		Task UnLink(INodeLink link);
-	}
+public interface ILinkable
+{
+	Task Link(INodeLink link);
+
+	Task UnLink(INodeLink link);
 }

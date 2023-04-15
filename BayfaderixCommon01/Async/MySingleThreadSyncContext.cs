@@ -1,80 +1,161 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Name.Bayfaderix.Darxxemiyur.Common.Async
+namespace Name.Bayfaderix.Darxxemiyur.Async;
+
+public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingContext, IDisposable
 {
-	public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingContext
+	public CancellationTokenSource Cancellation => _inner.Cancellation;
+
+	private readonly MySingleThreadSyncContextInner _inner;
+
+	public MySingleThreadSyncContext(ThreadPriority threadPriority = ThreadPriority.Normal) => _inner = new MySingleThreadSyncContextInner(threadPriority);
+
+	public Thread MyThread => _inner.MyThread;
+
+	public Task<TaskScheduler> MyTaskSchedulerPromise => _inner.MyTaskSchedulerPromise;
+
+	public Task<TaskFactory> MyTaskFactoryPromise => _inner.MyTaskFactoryPromise;
+
+	public TaskScheduler? MyTaskScheduler => _inner.MyTaskScheduler;
+
+	public TaskFactory? MyTaskFactory => _inner.MyTaskFactory;
+
+	public SynchronizationContext ThisContext => _inner.ThisContext;
+
+	public override void Post(SendOrPostCallback d, object? state) => _inner.Post(d, state);
+
+	public override void Send(SendOrPostCallback d, object? state) => _inner.Send(d, state);
+
+	public Task Place(AsyncOpBuilder asyncOp) => _inner.Place(asyncOp);
+
+	private bool _disposedValue;
+
+	protected virtual void Dispose(bool disposing)
 	{
-		private readonly Thread _mainThread;
+		if (_disposedValue)
+			return;
 
-		public MySingleThreadSyncContext()
+		if (disposing)
+			_inner.Dispose();
+
+		_disposedValue = true;
+	}
+
+	~MySingleThreadSyncContext() => this.Dispose(disposing: false);
+
+	public void Dispose()
+	{
+		this.Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+}
+
+internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnderlyingContext, IDisposable
+{
+	private readonly Thread _mainThread;
+
+	public CancellationTokenSource Cancellation {
+		get;
+	}
+
+	public MySingleThreadSyncContextInner(ThreadPriority threadPriority = ThreadPriority.Normal)
+	{
+		Cancellation = new CancellationTokenSource();
+		_handle = new(false, EventResetMode.AutoReset);
+		Cancellation.Token.Register(() => _handle.Set());
+		_tasks = new();
+		_myTaskSchedulerSource = new();
+		_myTaskFactorySource = new();
+		_tasksToDo = new();
+		_mainThread = new Thread(this.Spin) {
+			IsBackground = true,
+			Priority = threadPriority
+		};
+		this.Post((x) => {
+			var ts = TaskScheduler.FromCurrentSynchronizationContext();
+			var tf = new TaskFactory(ts);
+			MyTaskScheduler = ts;
+			_myTaskSchedulerSource.TrySetResult(ts);
+			MyTaskFactory = tf;
+			_myTaskFactorySource.TrySetResult(tf);
+		}, null);
+		_mainThread.Start(this);
+	}
+
+	private readonly EventWaitHandle _handle;
+	public Thread MyThread => _mainThread;
+
+	private readonly TaskCompletionSource<TaskScheduler> _myTaskSchedulerSource;
+
+	public Task<TaskScheduler> MyTaskSchedulerPromise => _myTaskSchedulerSource.Task;
+
+	private readonly TaskCompletionSource<TaskFactory> _myTaskFactorySource;
+
+	public Task<TaskFactory> MyTaskFactoryPromise => _myTaskFactorySource.Task;
+
+	public TaskScheduler? MyTaskScheduler {
+		get;
+		private set;
+	}
+
+	public TaskFactory? MyTaskFactory {
+		get;
+		private set;
+	}
+
+	public SynchronizationContext ThisContext => this;
+
+	public override void Post(SendOrPostCallback d, object? state)
+	{
+		_tasksToDo.Add((d, state));
+		_handle.Set();
+	}
+
+	public override void Send(SendOrPostCallback d, object? state) => d(state);
+
+	private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasksToDo;
+	private readonly LinkedList<(SendOrPostCallback, object?)> _tasks;
+	private bool _disposedValue;
+
+	private void Spin(object? context)
+	{
+		SetSynchronizationContext(context as MySingleThreadSyncContextInner);
+		while (!Cancellation.IsCancellationRequested)
 		{
-			_handle = new(false, EventResetMode.AutoReset);
-			_tasks = new();
-			_myTaskSchedulerSource = new();
-			_myTaskFactorySource = new();
-			_tasksToDo = new();
-			_mainThread = new Thread(Spin);
-			Post((x) => {
-				var ts = TaskScheduler.FromCurrentSynchronizationContext();
-				var tf = new TaskFactory(ts);
-				MyTaskScheduler = ts;
-				_myTaskSchedulerSource.TrySetResult(ts);
-				MyTaskFactory = tf;
-				_myTaskFactorySource.TrySetResult(tf);
-			}, null);
-			_mainThread.Start(this);
-		}
+			while (_tasksToDo.TryTake(out var item))
+				_tasks.AddLast(item);
 
-		private readonly EventWaitHandle _handle;
-		public Thread MyThread => _mainThread;
+			foreach ((var d, var o) in _tasks)
+				d?.Invoke(o);
 
-		private readonly TaskCompletionSource<TaskScheduler> _myTaskSchedulerSource;
-
-		public Task<TaskScheduler> MyTaskSchedulerPromise => _myTaskSchedulerSource.Task;
-
-		private readonly TaskCompletionSource<TaskFactory> _myTaskFactorySource;
-
-		public Task<TaskFactory> MyTaskFactoryPromise => _myTaskFactorySource.Task;
-
-		public TaskScheduler? MyTaskScheduler {
-			get;
-			private set;
-		}
-
-		public TaskFactory? MyTaskFactory {
-			get;
-			private set;
-		}
-
-		public SynchronizationContext ThisContext => this;
-
-		public override void Post(SendOrPostCallback d, object? state)
-		{
-			_tasksToDo.Add((d, state));
-			_handle.Set();
-		}
-
-		public override void Send(SendOrPostCallback d, object? state) => d(state);
-
-		private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasksToDo;
-		private readonly LinkedList<(SendOrPostCallback, object?)> _tasks;
-
-		private void Spin(object contextO)
-		{
-			var context = contextO as MySingleThreadSyncContext;
-			SetSynchronizationContext(context);
-
-			while (true)
-			{
-				while (_tasksToDo.TryTake(out var item))
-					_tasks.AddLast(item);
-
-				foreach ((var d, var o) in _tasks)
-					d?.Invoke(o);
-
-				_tasks.Clear();
+			_tasks.Clear();
+			if (_tasksToDo.IsEmpty)
 				_handle.WaitOne();
-			}
 		}
+	}
+
+	public async Task Place(AsyncOpBuilder asyncOp) => throw new NotImplementedException();
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (_disposedValue)
+			return;
+		if (!disposing)
+			return;
+
+		Cancellation.Cancel();
+		_handle.Set();
+		Cancellation.Dispose();
+		_handle.Dispose();
+
+		_disposedValue = true;
+	}
+
+	~MySingleThreadSyncContextInner() => this.Dispose(disposing: false);
+
+	public void Dispose()
+	{
+		this.Dispose(disposing: true);
+		GC.SuppressFinalize(this);
 	}
 }

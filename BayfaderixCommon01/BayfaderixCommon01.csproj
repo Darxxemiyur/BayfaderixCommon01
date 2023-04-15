@@ -5,12 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Name.Bayfaderix.Darxxemiyur</RootNamespace>
-    <Title>Name.Bayfaderix.Darxxemiyur.Common</Title>
+    <Title>Name.Bayfaderix.Darxxemiyur</Title>
     <PackageProjectUrl>https://source.bayfaderix.name/</PackageProjectUrl>
     <Copyright>https://s.bayfaderix.name/about/darxx</Copyright>
     <Description>Feel free to use my code IF you find it reliable and useful
 No need to credit or similar at all(like you would have lol)</Description>
     <Authors>https://s.bayfaderix.name/about/darxx</Authors>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>

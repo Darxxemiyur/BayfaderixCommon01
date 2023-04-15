@@ -1,11 +1,10 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable
+﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
+
+public interface INodeTranceiver : ILinkable
 {
-	public interface INodeTranceiver : ILinkable
-	{
-		Task Propogate(INodeContainer item);
+	Task Propogate(INodeContainer item);
 
-		Task Link(INodeReceiver sink);
+	Task Link(INodeReceiver sink);
 
-		Task UnLink(INodeReceiver sink);
-	}
+	Task UnLink(INodeReceiver sink);
 }

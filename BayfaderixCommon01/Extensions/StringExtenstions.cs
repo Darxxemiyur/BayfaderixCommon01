@@ -1,13 +1,12 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Common
+﻿namespace Name.Bayfaderix.Darxxemiyur.Extensions;
+
+public static class StringExtenstions
 {
-	public static class StringExtenstions
-	{
-		public static string DoStartAtMax(this string me, int size) => me[..Math.Min(me.Length, size)];
+	public static string DoStartAtMax(this string me, int size) => me[..Math.Min(me.Length, size)];
 
-		public static string DoEndAtMax(this string me, int size) => me.NotDoEndAtMax(me.Length - size);
+	public static string DoEndAtMax(this string me, int size) => me.NotDoEndAtMax(me.Length - size);
 
-		public static string NotDoStartAtMax(this string me, int size) => me.DoStartAtMax(me.Length - size);
+	public static string NotDoStartAtMax(this string me, int size) => me.DoStartAtMax(me.Length - size);
 
-		public static string NotDoEndAtMax(this string me, int size) => me[Math.Min(me.Length, size)..me.Length];
-	}
+	public static string NotDoEndAtMax(this string me, int size) => me[Math.Min(me.Length, size)..me.Length];
 }
