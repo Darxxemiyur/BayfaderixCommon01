@@ -1,4 +1,6 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General
+﻿using System.Linq.Expressions;
+
+namespace Name.Bayfaderix.Darxxemiyur.General
 {
 	/// <summary>
 	/// Presents an entity that can be asynchroniously acquired.
@@ -22,5 +24,14 @@
 		/// </summary>
 		/// <returns>Entity if any.</returns>
 		Task<T?> Acquire();
+
+		/// <summary>
+		/// Get related acquirable type.
+		/// </summary>
+		/// <typeparam name="TA">the acquirable type.</typeparam>
+		/// <param name="path">Path from Type of this acquirable to the needed requireable</param>
+		/// <returns>Acquirable if any.</returns>
+		// TODO: review this.
+		Task<IAcquirable<TA>?> GetAcquirable<TA>(Expression<Func<T, IAcquirable<TA>?>> path) where TA : class;
 	}
 }
