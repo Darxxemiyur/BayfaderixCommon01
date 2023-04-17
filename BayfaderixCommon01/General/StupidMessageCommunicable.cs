@@ -1,8 +1,7 @@
 ﻿namespace Name.Bayfaderix.Darxxemiyur.General;
 
 /// <summary>
-/// Stupid filler implementation of IMessageCommunicable that supports no communication. Has flag to
-/// throw <see cref="NotImplementedException"/>
+/// Stupid filler implementation of IMessageCommunicable that supports no communication. Has flag to throw <see cref="NotImplementedException"/>
 /// </summary>
 public class StupidMessageCommunicable : IMessageCommunicable
 {

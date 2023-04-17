@@ -34,34 +34,24 @@ public interface IMessageCommunicable
 	/// <summary>
 	/// Communicate instance an object.
 	/// </summary>
-	/// <returns>
-	/// The procedural communication channel that is up to the session channel instance to implement.
-	/// </returns>
+	/// <returns>The procedural communication channel that is up to the session channel instance to implement.</returns>
 	IEnumerable<TellResult> TellInternalProcedurally(TellMessage message);
 
 	/// <summary>
 	/// Communicate instance an object.
 	/// </summary>
-	/// <returns>
-	/// The procedural communication channel that is up to the session channel instance to implement.
-	/// </returns>
+	/// <returns>The procedural communication channel that is up to the session channel instance to implement.</returns>
 	IEnumerable<TellResult> TellInternalProcedurally(IEnumerable<TellMessage> message);
 
 	/// <summary>
 	/// Communicate instance an object asynchroniously.
 	/// </summary>
-	/// <returns>
-	/// The procedural asynchronous communication channel that is up to the session channel instance
-	/// to implement.
-	/// </returns>
+	/// <returns>The procedural asynchronous communication channel that is up to the session channel instance to implement.</returns>
 	IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(TellMessage message);
 
 	/// <summary>
 	/// Communicate instance an object asynchroniously.
 	/// </summary>
-	/// <returns>
-	/// The procedural asynchronous communication channel that is up to the session channel instance
-	/// to implement.
-	/// </returns>
+	/// <returns>The procedural asynchronous communication channel that is up to the session channel instance to implement.</returns>
 	IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(IAsyncEnumerable<TellMessage> message);
 }

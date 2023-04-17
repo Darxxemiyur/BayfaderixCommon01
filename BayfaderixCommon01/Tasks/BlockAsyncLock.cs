@@ -1,8 +1,7 @@
 ﻿namespace Name.Bayfaderix.Darxxemiyur.Tasks;
 
 /// <summary>
-/// Block async lock, allows to forget about iffs with exceptions scope and etc. Used in using
-/// statement. Forgetting about it also isn't critical, as if it gets gc collected, it unlocks itself.
+/// Block async lock, allows to forget about iffs with exceptions scope and etc. Used in using statement. Forgetting about it also isn't critical, as if it gets gc collected, it unlocks itself.
 /// </summary>
 public sealed class BlockAsyncLock : IDisposable, IAsyncDisposable
 {

@@ -24,18 +24,13 @@ public interface IIdentifiable<out TIdentifyable> : IMetaIdentity
 	/// Compares two instances for equality.
 	/// </summary>
 	/// <param name="to"></param>
-	/// <returns>
-	/// True if they are equal according to the istance's type's implementation of the interface.
-	/// False otherwise.
-	/// </returns>
+	/// <returns>True if they are equal according to the istance's type's implementation of the interface. False otherwise.</returns>
 	bool Equals<TId>(IIdentifiable<TId> to);
 
 	/// <summary>
 	/// Compares two instances for equality.
 	/// </summary>
 	/// <param name="to"></param>
-	/// <returns>
-	/// True if they are equal according to the implementation of the interface. False otherwise.
-	/// </returns>
+	/// <returns>True if they are equal according to the implementation of the interface. False otherwise.</returns>
 	bool Equals(object to);
 }

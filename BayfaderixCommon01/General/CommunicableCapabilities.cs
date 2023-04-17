@@ -57,14 +57,12 @@ public enum CommunicableCapabilities
 	TellInternalProcedurallyFromProceduralAsync = 1 << 7,
 
 	/// <summary>
-	/// Supports and implements everything these do: <see cref="TellInternal"/>, <see
-	/// cref="TellInternalProcedurally"/>, <see cref="Capabilities"/>, <see cref="TellInternalProcedurallyFromProcedural"/>.
+	/// Supports and implements everything these do: <see cref="TellInternal"/>, <see cref="TellInternalProcedurally"/>, <see cref="Capabilities"/>, <see cref="TellInternalProcedurallyFromProcedural"/>.
 	/// </summary>
 	AllSync = TellInternal | TellInternalProcedurally | Capabilities | TellInternalProcedurallyFromProcedural,
 
 	/// <summary>
-	/// Supports and implements everything these do: <see cref="TellInternalAsync"/>, <see
-	/// cref="TellInternalProcedurallyAsync"/>, <see cref="CapabilitiesAsync"/>, <see cref="TellInternalProcedurallyFromProceduralAsync"/>.
+	/// Supports and implements everything these do: <see cref="TellInternalAsync"/>, <see cref="TellInternalProcedurallyAsync"/>, <see cref="CapabilitiesAsync"/>, <see cref="TellInternalProcedurallyFromProceduralAsync"/>.
 	/// </summary>
 	AllAsync = TellInternalAsync | TellInternalProcedurallyAsync | CapabilitiesAsync | TellInternalProcedurallyFromProceduralAsync,
 

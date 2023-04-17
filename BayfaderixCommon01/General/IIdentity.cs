@@ -7,8 +7,7 @@ public interface IIdentity : IMetaIdentity
 {
 	/// <summary>
 	/// An optional IIdentity's channel to query it with whatever is needed. Full implementation(if
-	/// any) is up to the user. Can be used to acquire additional objects, access dependency
-	/// injection, and so on.
+	/// any) is up to the user. Can be used to acquire additional objects, access dependency injection, and so on.
 	/// </summary>
 	IMessageCommunicable? QnA {
 		get;
@@ -18,8 +17,6 @@ public interface IIdentity : IMetaIdentity
 	/// Compares two instances for equality.
 	/// </summary>
 	/// <param name="to"></param>
-	/// <returns>
-	/// True if they are equal according to the implementation of the interface. False otherwise.
-	/// </returns>
+	/// <returns>True if they are equal according to the implementation of the interface. False otherwise.</returns>
 	bool Equals(IIdentity to);
 }

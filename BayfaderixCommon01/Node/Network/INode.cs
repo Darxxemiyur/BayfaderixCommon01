@@ -1,8 +1,7 @@
 namespace Name.Bayfaderix.Darxxemiyur.Node.Network;
 
 /// <summary>
-/// An asynchronous node network. Provides a way to build a network of nodes that do certain tasks.
-/// Building UI with it is one of many ways to use it.
+/// An asynchronous node network. Provides a way to build a network of nodes that do certain tasks. Building UI with it is one of many ways to use it.
 /// </summary>
 public interface INodeNetwork
 {

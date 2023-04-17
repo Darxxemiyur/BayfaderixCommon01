@@ -3,17 +3,16 @@
 namespace Name.Bayfaderix.Darxxemiyur.Tasks;
 
 /// <summary>
-/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel partial
-/// data change, enabling async atomic operations to look somewhat fancy.
+/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel partial data change, enabling async atomic operations to look somewhat fancy.
 /// </summary>
 public sealed class AsyncLocker : IDisposable
 {
 	private readonly SemaphoreSlim _lock;
 	private readonly bool _configureAwait;
 	private bool _disposedValue;
+
 	/// <summary>
-	/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel partial
-	/// data change, enabling async atomic operations to look somewhat fancy.
+	/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel partial data change, enabling async atomic operations to look somewhat fancy.
 	/// </summary>
 	/// <param name="configureAwait"></param>
 	public AsyncLocker(bool configureAwait = false) => (_lock, _configureAwait) = (new(1, 1), configureAwait);

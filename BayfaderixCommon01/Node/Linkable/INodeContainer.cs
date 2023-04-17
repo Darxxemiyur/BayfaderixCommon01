@@ -1,8 +1,7 @@
 namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
 
 /// <summary>
-/// Container for nodes to utilize only single real type that has other types stacked in it. Like a
-/// converyor belt that carries one box per time unit that can has anything in it.
+/// Container for nodes to utilize only single real type that has other types stacked in it. Like a converyor belt that carries one box per time unit that can has anything in it.
 /// </summary>
 public interface INodeContainer
 {
