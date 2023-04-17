@@ -26,6 +26,12 @@ public interface IMessageCommunicable
 	TellResult TellInternal(TellMessage message);
 
 	/// <summary>
+	/// Communicate instance an object asynchroniously.
+	/// </summary>
+	/// <returns>The awaitable tell result.</returns>
+	Task<TellResult> TellInternalAsync(TellMessage message);
+
+	/// <summary>
 	/// Communicate instance an object.
 	/// </summary>
 	/// <returns>
@@ -34,10 +40,12 @@ public interface IMessageCommunicable
 	IEnumerable<TellResult> TellInternalProcedurally(TellMessage message);
 
 	/// <summary>
-	/// Communicate instance an object asynchroniously.
+	/// Communicate instance an object.
 	/// </summary>
-	/// <returns>The awaitable tell result.</returns>
-	Task<TellResult> TellInternalAsync(TellMessage message);
+	/// <returns>
+	/// The procedural communication channel that is up to the session channel instance to implement.
+	/// </returns>
+	IEnumerable<TellResult> TellInternalProcedurally(IEnumerable<TellMessage> message);
 
 	/// <summary>
 	/// Communicate instance an object asynchroniously.
@@ -47,14 +55,6 @@ public interface IMessageCommunicable
 	/// to implement.
 	/// </returns>
 	IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(TellMessage message);
-
-	/// <summary>
-	/// Communicate instance an object.
-	/// </summary>
-	/// <returns>
-	/// The procedural communication channel that is up to the session channel instance to implement.
-	/// </returns>
-	IEnumerable<TellResult> TellInternalProcedurally(IEnumerable<TellMessage> message);
 
 	/// <summary>
 	/// Communicate instance an object asynchroniously.
