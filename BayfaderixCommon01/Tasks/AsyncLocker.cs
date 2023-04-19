@@ -3,8 +3,7 @@
 namespace Name.Bayfaderix.Darxxemiyur.Tasks;
 
 /// <summary>
-/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel partial
-/// data change, enabling async atomic operations to look somewhat fancy.
+/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel partial data change, enabling async atomic operations to look somewhat fancy.
 /// </summary>
 public sealed class AsyncLocker : IDisposable
 {
@@ -12,6 +11,10 @@ public sealed class AsyncLocker : IDisposable
 	private readonly bool _configureAwait;
 	private bool _disposedValue;
 
+	/// <summary>
+	/// Fancy way of synching two parallel operations, to prevent an extreme case of parallel partial data change, enabling async atomic operations to look somewhat fancy.
+	/// </summary>
+	/// <param name="configureAwait"></param>
 	public AsyncLocker(bool configureAwait = false) => (_lock, _configureAwait) = (new(1, 1), configureAwait);
 
 	public Task AsyncLock(CancellationToken token = default) => _lock.WaitAsync(token);
@@ -22,7 +25,7 @@ public sealed class AsyncLocker : IDisposable
 
 	public void Lock(TimeSpan time, CancellationToken token = default) => _lock.Wait(time, token);
 
-	public async Task<BlockAsyncLock> BlockAsyncLock(CancellationToken token = default, bool configureAwait = false)
+	public async Task<BlockAsyncLock> ScopeAsyncLock(CancellationToken token = default, bool configureAwait = false)
 	{
 		if (_disposedValue)
 			throw new ObjectDisposedException(this.GetType().Name);
@@ -30,7 +33,7 @@ public sealed class AsyncLocker : IDisposable
 		return new BlockAsyncLock(this, configureAwait);
 	}
 
-	public BlockAsyncLock BlockLock(bool configureAwait = false)
+	public BlockAsyncLock ScopeLock(bool configureAwait = false)
 	{
 		if (_disposedValue)
 			throw new ObjectDisposedException(this.GetType().Name);

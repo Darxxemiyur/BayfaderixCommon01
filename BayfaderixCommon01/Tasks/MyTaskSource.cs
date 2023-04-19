@@ -104,7 +104,7 @@ public class MyTaskSource<T> : IDisposable
 
 	private async Task<T> InSecure()
 	{
-		await using (var _ = await _lockb.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+		await using (var _ = await _lockb.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			_innerTask ??= this.InTask();
 
 		return await _innerTask.ConfigureAwait(_configureAwait);
@@ -158,7 +158,7 @@ public class MyTaskSource<T> : IDisposable
 
 	public bool TrySetResult(T result)
 	{
-		using var _ = _lock.BlockLock();
+		using var __ = _lock.ScopeLock();
 
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		//The result is not null.
@@ -168,7 +168,7 @@ public class MyTaskSource<T> : IDisposable
 
 	public bool TrySetException(Exception result)
 	{
-		using var _ = _lock.BlockLock();
+		using var __ = _lock.ScopeLock();
 
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		//The right slot of tuple is not null only if _throwOnException is true.
@@ -178,7 +178,7 @@ public class MyTaskSource<T> : IDisposable
 
 	public bool TrySetCanceled()
 	{
-		using var _ = _lock.BlockLock();
+		using var __ = _lock.ScopeLock();
 
 		if (!_inner.IsCancellationRequested)
 			_cancel.Cancel();
@@ -196,7 +196,7 @@ public class MyTaskSource<T> : IDisposable
 	/// <returns></returns>
 	public async Task<bool> TrySetResultAsync(T result)
 	{
-		await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		//The result is not null.
@@ -206,7 +206,7 @@ public class MyTaskSource<T> : IDisposable
 
 	public async Task<bool> TrySetExceptionAsync(Exception result)
 	{
-		await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 		//The right slot of tuple is not null only if _throwOnException is true.
@@ -216,7 +216,7 @@ public class MyTaskSource<T> : IDisposable
 
 	public async Task<bool> TrySetCanceledAsync()
 	{
-		await using var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		if (!_inner.IsCancellationRequested)
 			_cancel.Cancel();
 

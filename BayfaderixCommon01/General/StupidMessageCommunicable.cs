@@ -1,8 +1,7 @@
 ﻿namespace Name.Bayfaderix.Darxxemiyur.General;
 
 /// <summary>
-/// Stupid filler implementation of IMessageCommunicable that supports no communication. Has flag to
-/// throw <see cref="NotImplementedException"/>
+/// Stupid filler implementation of IMessageCommunicable that supports no communication. Has flag to throw <see cref="NotImplementedException"/>
 /// </summary>
 public class StupidMessageCommunicable : IMessageCommunicable
 {
@@ -22,12 +21,23 @@ public class StupidMessageCommunicable : IMessageCommunicable
 		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
 	}
 
+	public IEnumerable<TellResult> TellInternalProcedurally(IEnumerable<TellMessage> message)
+	{
+		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
+	}
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 	//It is fine since it practically has no overhead.
 	public async IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(TellMessage message)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 	{
 		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
 	}
+
+	public async IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(IAsyncEnumerable<TellMessage> message)
+	{
+		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
+	}
+
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }

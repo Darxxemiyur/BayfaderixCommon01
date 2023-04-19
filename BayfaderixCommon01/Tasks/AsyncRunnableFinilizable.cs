@@ -8,10 +8,17 @@ public sealed class AsyncRunnableFinilizable<T> : IDisposable, IAsyncDisposable,
 {
 	private readonly T _runnable;
 	private bool _disposedValue;
+	private bool _ca;
 
 	public MyTaskSource<object> ExposedObject => _runnable.ExposedObject;
 
 	public AsyncRunnableFinilizable(T instance) => _runnable = instance;
+
+	public AsyncRunnableFinilizable<T> ConfigureAwait(bool ca)
+	{
+		_ca = ca;
+		return this;
+	}
 
 	public async ValueTask DisposeAsync()
 	{
@@ -24,7 +31,7 @@ public sealed class AsyncRunnableFinilizable<T> : IDisposable, IAsyncDisposable,
 		_disposedValue = true;
 		GC.SuppressFinalize(this);
 
-		await adr.DisposeAsync();
+		await adr.DisposeAsync().ConfigureAwait(_ca);
 	}
 
 	public Task RunRunnable(CancellationToken token = default) => _runnable.RunRunnable(token);

@@ -18,9 +18,7 @@ public sealed class MyRelayTask
 
 	/// <summary>
 	/// </summary>
-	/// <param name="work">
-	/// Delegate that starts the task. Be aware that it starts only after accessing the TheTask property
-	/// </param>
+	/// <param name="work">Delegate that starts the task. Be aware that it starts only after accessing the TheTask property</param>
 	/// <param name="token">Cancellation token to cancel the proxy task</param>
 	public MyRelayTask(Func<Task> work, CancellationToken token = default, bool configureAwait = false) => _facade = new(async () => { await work().ConfigureAwait(configureAwait); return false; }, token, configureAwait);
 
@@ -66,15 +64,13 @@ public class MyRelayTask<T>
 
 	/// <summary>
 	/// </summary>
-	/// <param name="work">
-	/// Delegate that starts the task. Be aware that it starts only after accessing the TheTask property
-	/// </param>
+	/// <param name="work">Delegate that starts the task. Be aware that it starts only after accessing the TheTask property</param>
 	/// <param name="token">Cancellation token to cancel the proxy task</param>
 	public MyRelayTask(Func<Task<T>> work, CancellationToken token = default, bool configureAwait = false) : this(token, configureAwait) => _callable = work;
 
 	private async Task<T> Encapsulate()
 	{
-		await using (var _ = await _lock.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+		await using (var _ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			_innerWork ??= this.SecureThingy();
 
 		return await _innerWork.ConfigureAwait(_configureAwait);
