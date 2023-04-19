@@ -15,20 +15,7 @@ public static class MyTaskExtensions
 
 	public static Task<TResult> RunOnScheduler<TResult>(this Func<CancellationToken, Task<TResult>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => func(token), token, scheduler);
 
-	public static TaskScheduler GetScheduler(TaskScheduler? suggested = default)
-	{
-		if (suggested != null)
-			return suggested;
-
-		if (SynchronizationContext.Current is IMyUnderlyingContext context && context.MyTaskScheduler != null)
-			return context.MyTaskScheduler;
-
-		//TaskScheduler.FromCurrentSynchronizationContext() with current as null would probably return TaskScheduler.Default, but I'm not riskin it.
-		if (SynchronizationContext.Current is not null)
-			return TaskScheduler.FromCurrentSynchronizationContext();
-
-		return TaskScheduler.Current;
-	}
+	public static TaskScheduler GetScheduler(TaskScheduler? suggested = default) => AsyncOpBuilder.GetScheduler(suggested);
 
 	public static Task<TResult> RunOnScheduler<TResult>(this Func<TResult> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => Task.FromResult(func()), token, scheduler);
 

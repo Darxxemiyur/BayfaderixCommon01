@@ -28,7 +28,7 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 
 	public async Task Handle(T stuff)
 	{
-		await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
 		if (_generator.MyTask.IsCanceled)
 			await _generator.MyTask.ConfigureAwait(_configureAwait);
@@ -39,7 +39,7 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 
 	public async Task Cancel()
 	{
-		await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		await _generator.TrySetCanceledAsync().ConfigureAwait(_configureAwait);
 	}
 
@@ -47,7 +47,7 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	{
 		LinkedListNode<Task<T>> result;
 
-		await using (var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+		await using (var _ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			result = _chain.First;
 
 		using var revert = new MyTaskSource<T>(token);
@@ -56,7 +56,7 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 
 		if (either == result.Value)
 		{
-			await using var _ = await _sync.BlockAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+			await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 			if (result.List != null)
 				_chain.Remove(result);
 		}

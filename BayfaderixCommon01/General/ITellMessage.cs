@@ -15,7 +15,7 @@ public interface ITellMessage
 	/// <summary>
 	/// The message custom message.
 	/// </summary>
-	object? Message {
+	IIdentifiable<object?>? Message {
 		get;
 	}
 }

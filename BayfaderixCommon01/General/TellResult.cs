@@ -20,5 +20,5 @@ public record struct TellResult(ITellResult? OriginalResult) : ITellResult
 	/// <summary>
 	/// The message custom result.
 	/// </summary>
-	public object? Result => OriginalResult?.Result;
+	public IIdentifiable<object?>? Result => OriginalResult?.Result;
 }

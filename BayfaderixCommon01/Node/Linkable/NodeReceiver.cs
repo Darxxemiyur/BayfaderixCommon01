@@ -29,7 +29,7 @@ public class NodeReceiver : INodeReceiver
 
 	public async Task UnLink(INodeTranceiver source)
 	{
-		if (_inputLinks.Find(x => x.IsThisPair(source, this)) is var link == default)
+		if (_inputLinks.Find(x => x.IsThisPair(source, this)) is var link && link == default)
 			return;
 		await this.UnLink(link).ConfigureAwait(_configureAwait);
 		await source.UnLink(link).ConfigureAwait(_configureAwait);

@@ -5,6 +5,9 @@
 /// </summary>
 public interface ISmartAsyncRunnable<T>
 {
+	/// <summary>
+	/// A retrievable object exposed by the instance.
+	/// </summary>
 	MyTaskSource<T> ExposedObject {
 		get;
 	}

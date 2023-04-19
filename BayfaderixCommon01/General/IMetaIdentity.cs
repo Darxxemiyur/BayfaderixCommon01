@@ -8,7 +8,5 @@ public interface IMetaIdentity
 	/// <summary>
 	/// Type of the instance.
 	/// </summary>
-	Type Type {
-		get;
-	}
+	Type Type => this.GetType(); //Default "the fuckin forget" implementation.
 }
