@@ -178,7 +178,7 @@ public sealed class AsyncOpBuilder
 		return this;
 	}
 
-	public async Task<LinkedList<Task>> Run(CancellationToken token = default)
+	public IEnumerable<Task> Run(CancellationToken token = default)
 	{
 		var queue = new LinkedList<Task>();
 		var innerToken = _token ?? default;
@@ -200,7 +200,6 @@ public sealed class AsyncOpBuilder
 		foreach (var task in _unCancellableActions)
 			queue.AddLast(factory.StartNew(() => task.Invoke(), tokenU));
 
-		await factory.StartNew(() => Task.WhenAll(queue)).Unwrap().ConfigureAwait(_ca);
 		return queue;
 	}
 }
