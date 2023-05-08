@@ -21,5 +21,5 @@ public interface IMyUnderlyingContext
 
 	void Post(SendOrPostCallback d, object? state);
 
-	Task Place(AsyncOpBuilder asyncOp);
+	Task Place(BatchAsyncOpBuilder asyncOp);
 }

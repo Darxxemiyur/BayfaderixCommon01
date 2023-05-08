@@ -15,7 +15,7 @@ public static class MyTaskExtensions
 
 	public static Task<TResult> RunOnScheduler<TResult>(this Func<CancellationToken, Task<TResult>> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => func(token), token, scheduler);
 
-	public static TaskScheduler GetScheduler(TaskScheduler? suggested = default) => AsyncOpBuilder.GetScheduler(suggested);
+	public static TaskScheduler GetScheduler(TaskScheduler? suggested = default) => BatchAsyncOpBuilder.GetScheduler(suggested);
 
 	public static Task<TResult> RunOnScheduler<TResult>(this Func<TResult> func, CancellationToken token = default, TaskScheduler? scheduler = default) => RunOnScheduler(() => Task.FromResult(func()), token, scheduler);
 

@@ -26,7 +26,7 @@ public class MySingleThreadSyncContext : SynchronizationContext, IMyUnderlyingCo
 
 	public override void Send(SendOrPostCallback d, object? state) => _inner.Send(d, state);
 
-	public Task Place(AsyncOpBuilder asyncOp) => _inner.Place(asyncOp);
+	public Task Place(BatchAsyncOpBuilder asyncOp) => _inner.Place(asyncOp);
 
 	private bool _disposedValue;
 
@@ -134,7 +134,7 @@ internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnder
 		}
 	}
 
-	public async Task Place(AsyncOpBuilder asyncOp) => throw new NotImplementedException();
+	public async Task Place(BatchAsyncOpBuilder asyncOp) => throw new NotImplementedException();
 
 	protected virtual void Dispose(bool disposing)
 	{
