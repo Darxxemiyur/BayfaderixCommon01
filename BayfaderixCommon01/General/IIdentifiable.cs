@@ -10,7 +10,7 @@ public interface IIdentifiable<out TIdentifyable> : IMetaIdentity
 	/// An optional IIdentifiable's channel to query it with whatever is needed. Full implementation(if
 	/// any) is up to the user. Can be used to acquire additional objects, access dependency injection, and so on.
 	/// </summary>
-	IMessageCommunicable? QnA => throw new NotImplementedException();
+	IMessageCommunicable? QnA => new StupidMessageCommunicable();
 
 	/// <summary>
 	/// Identity of the IIdentifiable. Can be null.
