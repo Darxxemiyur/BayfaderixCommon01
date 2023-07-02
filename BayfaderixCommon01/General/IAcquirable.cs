@@ -3,27 +3,40 @@
 namespace Name.Bayfaderix.Darxxemiyur.General;
 
 /// <summary>
-/// Presents an entity that can be asynchroniously acquired.
+/// Presents an <see cref="IIdentifiable{T}"/> entity that can be asynchroniously acquired.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public interface IAcquirable<T> where T : class
 {
 	/// <summary>
-	/// Primarily intended to be used with optional configuring.
+	/// Parent repository of this <see cref="IAcquirable{T}"/>
 	/// </summary>
-	IMessageCommunicable? QnA => new StupidMessageCommunicable();
+	IAcquirablesRepository<T> Repository {
+		get;
+	}
+
+	/// <summary>
+	/// Identity of <see cref="IAcquirable{T}"/> entity.
+	/// </summary>
+	IIdentity? Identity {
+		get;
+	}
 
 	/// <summary>
 	/// Ask instance if it knows how to acquire the entity.
 	/// </summary>
 	/// <returns>Returns true if it knows how to acquire the entity. False otherwise.</returns>
 	Task<bool> IsAcquirable();
+	bool IsLoaded(T acquired, Expression<Func<T, IIdentifiable<object>>> expression);
+	Task<bool> TryLoad(T acquired, Expression<Func<T, IIdentifiable<object>>> expression);
+	bool IsLoaded<TI>(Expression<Func<T, IIdentifiable<TI>>> expression);
+	Task<bool> TryLoad<TI>(Expression<Func<T, IIdentifiable<TI>>> expression);
 
 	/// <summary>
 	/// Attempt to acquire the entity.
 	/// </summary>
 	/// <returns>Entity if any.</returns>
-	Task<T?> Acquire();
+	Task<IIdentifiable<T>?> Acquire();
 
 	/// <summary>
 	/// Sets the held data.
@@ -31,6 +44,13 @@ public interface IAcquirable<T> where T : class
 	/// <param name="data"></param>
 	/// <returns></returns>
 	Task Set(T? data);
+
+	/// <summary>
+	/// Sets the held data.
+	/// </summary>
+	/// <param name="data"></param>
+	/// <returns></returns>
+	Task Set(IIdentifiable<T>? data);
 
 	/// <summary>
 	/// Get related acquirable type.
@@ -42,14 +62,18 @@ public interface IAcquirable<T> where T : class
 	Task<IAcquirable<TA>?> GetAcquirable<TA>(Expression<Func<T, IAcquirable<TA>?>> path) where TA : class;
 
 	/// <summary>
-	/// Attempts to save/commit changes.
+	/// Attempts to save/commit changes of related entities.
+	/// <br/>
+	/// [Note: Does not guarantee saving changes of all entities acquired from the <see cref="Repository"/>]
 	/// </summary>
 	/// <returns></returns>
 	Task<CommitResult> TryCommitChanges(CommitOption commitOption);
 
 	/// <summary>
-	/// Tries to solve the conflict by applying a delegate on our and theirs datas.
+	/// Tries to solve the conflicting entities by applying a delegate on our and theirs datas.
 	/// The result of the delegate is used to update the acquired entity. Typically in-place.
+	/// <br/>
+	/// [Same note as in <see cref="TryCommitChanges(CommitOption)"/>]
 	/// </summary>
 	/// <param name="commitOption">Commit options</param>
 	/// <param name="solver">Solver delegate</param>
@@ -57,54 +81,3 @@ public interface IAcquirable<T> where T : class
 	Task<CommitResult> TryResolveConflict(CommitOption commitOption, ConflictSolver<T> solver);
 }
 
-/// <summary>
-/// Conflict solving delegate.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <param name="ours">Our version of data</param>
-/// <param name="theirs"></param>
-/// <returns></returns>
-public delegate T? ConflictSolver<T>(T? ours, T? theirs);
-
-public enum CommitOption
-{
-	/// <summary>
-	/// Overwrite
-	/// </summary>
-	Overwrite,
-	/// <summary>
-	/// Throw on Conflict
-	/// </summary>
-	ThrowOnConflict,
-	/// <summary>
-	/// Update data if it has not been changed. Gently fail otherwise.
-	/// </summary>
-	UpdateIfNotUpdated,
-}
-
-/// <summary>
-/// Commit result flags.
-/// </summary>
-public enum CommitResult
-{
-	/// <summary>
-	/// Commiting changes has failed.
-	/// </summary>
-	Failed,
-	/// <summary>
-	/// Changes have been successfully commited.
-	/// </summary>
-	Commited,
-	/// <summary>
-	/// No changes to commit.
-	/// </summary>
-	NoChanges,
-	/// <summary>
-	/// Commit aborted due to data changes present in the source.
-	/// </summary>
-	Aborted,
-	/// <summary>
-	/// Commit failed due to data changes in the source.
-	/// </summary>
-	Conflict,
-}

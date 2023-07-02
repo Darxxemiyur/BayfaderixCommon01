@@ -17,4 +17,11 @@ public interface IIdentity : IMetaIdentity
 	/// <param name="to"></param>
 	/// <returns>True if they are equal according to the implementation of the interface. False otherwise.</returns>
 	bool Equals(IIdentity to);
+
+	/// <summary>
+	/// Whether this identity 'record' has id data to identify some other data.
+	/// </summary>
+	bool HasId {
+		get;
+	}
 }
