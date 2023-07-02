@@ -10,7 +10,7 @@ public interface IGeneralStepInfo : IMetaIdentity
 	/// <summary>
 	/// Optional implementation of message communicable of general step info.
 	/// </summary>
-	IMessageCommunicable? QnA => new StupidMessageCommunicable();
+	IMessageCommunicable? QnA => new StupidMessageCommunicable(false);
 
 	/// <summary>
 	/// Runs general step according to its implementation. Generally intended to run a single method.

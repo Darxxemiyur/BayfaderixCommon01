@@ -10,7 +10,7 @@ public interface IGeneralNodeNetwork : IMetaIdentity
 	/// <summary>
 	/// Optional implementation of message communicable of general node network.
 	/// </summary>
-	IMessageCommunicable? QnA => new StupidMessageCommunicable();
+	IMessageCommunicable? QnA => new StupidMessageCommunicable(false);
 
 	/// <summary>
 	/// Acquires general step info according to the payload.

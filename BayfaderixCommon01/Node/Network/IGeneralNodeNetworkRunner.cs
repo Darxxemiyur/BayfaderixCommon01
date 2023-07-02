@@ -10,7 +10,7 @@ public interface IGeneralNodeNetworkRunner : IMetaIdentity
 	/// <summary>
 	/// Optional implementation of message communicable of general node network runner.
 	/// </summary>
-	IMessageCommunicable? QnA => new StupidMessageCommunicable();
+	IMessageCommunicable? QnA => new StupidMessageCommunicable(false);
 
 	/// <summary>
 	/// Run general node network.
