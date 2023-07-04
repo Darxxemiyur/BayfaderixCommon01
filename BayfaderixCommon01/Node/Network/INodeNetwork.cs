@@ -1,3 +1,5 @@
+using Name.Bayfaderix.Darxxemiyur.General;
+
 namespace Name.Bayfaderix.Darxxemiyur.Node.Network;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace Name.Bayfaderix.Darxxemiyur.Node.Network;
 /// </summary>
 public interface INodeNetwork
 {
+	/// <summary>
+	/// A way to query node network for capabilities and etc.
+	/// </summary>
+	IMessageCommunicable? QnA => new StupidMessageCommunicable(false);
+
 	/// <summary>
 	/// Retreives starting instruction for the network.
 	/// </summary>
