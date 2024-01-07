@@ -11,7 +11,7 @@ public sealed class ExternalOnFinalization : IDisposable
 
 	private bool _disposedValue;
 	private bool _called;
-	private readonly LinkedList<Action> _actions;
+	private readonly List<Action> _actions;
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1172:Unused method parameters should be removed", Justification = "Following the snippet IDisposable interface pattern.")]
 	private void Dispose(bool disposing)
@@ -31,13 +31,13 @@ public sealed class ExternalOnFinalization : IDisposable
 	/// <summary>
 	/// List of actions.
 	/// </summary>
-	public LinkedList<Action> Actions => _called ? new LinkedList<Action>() : _actions;
+	public List<Action> Actions => _called ? new List<Action>() : _actions;
 
 	/// <summary>
 	/// Initilizes the instance.
 	/// </summary>
 	/// <param name="actions">List of actions to add initially.</param>
-	public ExternalOnFinalization(IEnumerable<Action>? actions = null) => _actions = actions?.ToLinkedList() ?? new LinkedList<Action>();
+	public ExternalOnFinalization(IEnumerable<Action>? actions = null) => _actions = actions?.ToList() ?? new List<Action>();
 
 	/// <summary>
 	/// Calls placed actions.

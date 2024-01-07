@@ -2,6 +2,8 @@
 
 /// <summary>
 /// Identity interface. Acts as an ambigous way to uniquely identify data.
+/// Implementation is allowed to utilize any way of identification.
+/// Hence should be used with care and only in places with convention.
 /// </summary>
 public interface IIdentity : IMetaIdentity
 {
