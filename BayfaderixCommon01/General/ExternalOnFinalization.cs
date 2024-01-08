@@ -3,7 +3,7 @@
 namespace Name.Bayfaderix.Darxxemiyur.General;
 
 /// <summary>
-/// An object that 
+/// An object to call external actions with arguments on its finilization.
 /// </summary>
 public sealed class ExternalOnFinalization : IDisposable
 {
@@ -61,7 +61,7 @@ public sealed class ExternalOnFinalization : IDisposable
 }
 
 /// <summary>
-/// An object to call external actions with arguments on finilization.
+/// An object to call external actions with arguments on its finilization.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public sealed class ExternalOnFinalization<T> : IDisposable
