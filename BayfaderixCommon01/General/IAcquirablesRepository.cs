@@ -10,9 +10,14 @@ public interface IAcquirablesRepository<T> : IQueryable<IAcquirable<T>>, IQuerya
 	/// </summary>
 	IMessageCommunicable? QnA => new StupidMessageCommunicable();
 
+	/// <summary>
+	/// Asynchroniously fetches IAcquirable implementation
+	/// </summary>
+	/// <param name="predicate"></param>
+	/// <returns></returns>
 	Task<IAcquirable<T>> GetAcquirable(Expression<Func<T, bool>>? predicate);
 
-	IAsyncEnumerable<IAcquirable<T>> GetAcquirablesAsync(Expression<Func<T, bool>>? predicate);
+	IAsyncEnumerable<IAcquirable<T>> GetAcquirables(Expression<Func<T, bool>>? predicate);
 
 	bool IsLoaded(T acquired, Expression<Func<T, IIdentifiable<object>>> expression);
 	Task<bool> TryLoad(T acquired, Expression<Func<T, IIdentifiable<object>>> expression);
