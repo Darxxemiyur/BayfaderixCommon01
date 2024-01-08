@@ -11,7 +11,7 @@ public sealed class ExternalOnFinalization : IDisposable
 
 	private bool _disposedValue;
 	private bool _called;
-	private readonly List<Action> _actions;
+	private List<Action> _actions;
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1172:Unused method parameters should be removed", Justification = "Following the snippet IDisposable interface pattern.")]
 	private void Dispose(bool disposing)
@@ -31,7 +31,7 @@ public sealed class ExternalOnFinalization : IDisposable
 	/// <summary>
 	/// List of actions.
 	/// </summary>
-	public List<Action> Actions => _called ? new List<Action>() : _actions;
+	public List<Action> Actions => _actions;
 
 	/// <summary>
 	/// Initilizes the instance.
@@ -51,6 +51,7 @@ public sealed class ExternalOnFinalization : IDisposable
 			action.Invoke();
 
 		_called = true;
+		_actions = new List<Action>();
 	}
 
 	public void Dispose()
@@ -71,7 +72,7 @@ public sealed class ExternalOnFinalization<T> : IDisposable
 	private bool _disposedValue;
 	private bool _called;
 	private readonly T _default;
-	private LinkedList<Action<T>> _actions;
+	private List<Action<T>> _actions;
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1172:Unused method parameters should be removed", Justification = "Following the snippet IDisposable interface pattern.")]
 	private void Dispose(bool disposing)
@@ -91,13 +92,13 @@ public sealed class ExternalOnFinalization<T> : IDisposable
 	/// <summary>
 	/// List of actions.
 	/// </summary>
-	public LinkedList<Action<T>> Actions => _actions;
+	public List<Action<T>> Actions => _actions;
 
 	/// <summary>
 	/// Initilizes the instance.
 	/// </summary>
 	/// <param name="actions">List of actions to add initially.</param>
-	public ExternalOnFinalization(T @default, IEnumerable<Action<T>>? actions = null) => (_default, _actions) = (@default, actions?.ToLinkedList() ?? new LinkedList<Action<T>>());
+	public ExternalOnFinalization(T @default, IEnumerable<Action<T>>? actions = null) => (_default, _actions) = (@default, actions?.ToList() ?? new List<Action<T>>());
 
 	/// <summary>
 	/// Calls placed actions with an argument.
@@ -112,7 +113,7 @@ public sealed class ExternalOnFinalization<T> : IDisposable
 			action.Invoke(arg);
 
 		_called = true;
-		_actions = new LinkedList<Action<T>>();
+		_actions = new List<Action<T>>();
 	}
 
 	/// <summary>
