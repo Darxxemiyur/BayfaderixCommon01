@@ -3,7 +3,7 @@
 namespace Name.Bayfaderix.Darxxemiyur.General;
 
 /// <summary>
-/// An object to call external actions on finilization.
+/// An object that 
 /// </summary>
 public sealed class ExternalOnFinalization : IDisposable
 {
@@ -71,7 +71,7 @@ public sealed class ExternalOnFinalization<T> : IDisposable
 	private bool _disposedValue;
 	private bool _called;
 	private readonly T _default;
-	private readonly LinkedList<Action<T>> _actions;
+	private LinkedList<Action<T>> _actions;
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1172:Unused method parameters should be removed", Justification = "Following the snippet IDisposable interface pattern.")]
 	private void Dispose(bool disposing)
@@ -91,7 +91,7 @@ public sealed class ExternalOnFinalization<T> : IDisposable
 	/// <summary>
 	/// List of actions.
 	/// </summary>
-	public LinkedList<Action<T>> Actions => _called ? new LinkedList<Action<T>>() : _actions;
+	public LinkedList<Action<T>> Actions => _actions;
 
 	/// <summary>
 	/// Initilizes the instance.
@@ -112,6 +112,7 @@ public sealed class ExternalOnFinalization<T> : IDisposable
 			action.Invoke(arg);
 
 		_called = true;
+		_actions = new LinkedList<Action<T>>();
 	}
 
 	/// <summary>

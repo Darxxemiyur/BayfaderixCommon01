@@ -3,7 +3,7 @@
 /// <summary>
 /// A non nullable value structure. Do not mistake for ITellResult. They are not the same.
 /// </summary>
-public record struct TellResult(ITellResult? OriginalResult) : ITellResult
+public record struct TellResult<TObject>(ITellResult<TObject>? OriginalResult) : ITellResult<TObject>
 {
 	/// <summary>
 	/// True if TellResult encloses a null. False otherwise.
@@ -20,5 +20,5 @@ public record struct TellResult(ITellResult? OriginalResult) : ITellResult
 	/// <summary>
 	/// The message custom result.
 	/// </summary>
-	public IIdentifiable<object?>? Result => OriginalResult?.Result;
+	public IIdentifiable<TObject>? Result => OriginalResult?.Result;
 }

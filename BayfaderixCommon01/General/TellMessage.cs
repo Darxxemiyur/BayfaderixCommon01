@@ -3,7 +3,7 @@
 /// <summary>
 /// A non nullable value structure. Do not mistake for ITellMessage. They are not the same.
 /// </summary>
-public record struct TellMessage(ITellMessage? OriginalMessage) : ITellMessage
+public record struct TellMessage<TObject>(ITellMessage<TObject>? OriginalMessage) : ITellMessage<TObject>
 {
 	/// <summary>
 	/// True if TellMessage encloses a null. False otherwise.
@@ -16,5 +16,5 @@ public record struct TellMessage(ITellMessage? OriginalMessage) : ITellMessage
 	/// <summary>
 	/// The message custom message.
 	/// </summary>
-	public IIdentifiable<object?>? Message => OriginalMessage?.Message;
+	public IIdentifiable<TObject>? Message => OriginalMessage?.Message;
 }

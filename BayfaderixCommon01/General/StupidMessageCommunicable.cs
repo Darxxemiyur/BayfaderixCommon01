@@ -12,31 +12,33 @@ public class StupidMessageCommunicable : IMessageCommunicable
 	public CommunicableCapabilities Capabilities => CommunicableCapabilities.None;
 	public Task<CommunicableCapabilities> CapabilitiesAsync => Task.FromResult(Capabilities);
 
-	public TellResult TellInternal(TellMessage message) => _flag ? throw new NotImplementedException() : new TellResult(null);
+	public ITellResult<object> TellInternal(ITellMessage<object> message) => _flag ? throw new NotImplementedException() : new TellResult<object>(null);
 
-	public Task<TellResult> TellInternalAsync(TellMessage message) => _flag ? throw new NotImplementedException() : Task.FromResult(new TellResult(null));
+	Task<ITellResult<T>> IMessageCommunicable<object, object, object>.TellInternalAsync<T>(ITellMessage<object> message) => this.TellInternalAsync<T>(message);
 
-	public IEnumerable<TellResult> TellInternalProcedurally(TellMessage message)
+	public Task<ITellResult<T>> TellInternalAsync<T>(ITellMessage<object> message) => _flag ? throw new NotImplementedException() : Task.FromResult<ITellResult<T>>(new TellResult<T>(null));
+
+	public IEnumerable<ITellResult<object>> TellInternalProcedurally(ITellMessage<object> message)
 	{
-		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
+		yield return _flag ? throw new NotImplementedException() : new TellResult<object>(null);
 	}
 
-	public IEnumerable<TellResult> TellInternalProcedurally(IEnumerable<TellMessage> message)
+	public IEnumerable<ITellResult<object>> TellInternalProcedurally(IEnumerable<ITellMessage<object>> message)
 	{
-		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
+		yield return _flag ? throw new NotImplementedException() : new TellResult<object>(null);
 	}
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 	//It is fine since it practically has no overhead.
-	public async IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(TellMessage message)
+	public async IAsyncEnumerable<ITellResult<object>> TellInternalProcedurallyAsync(ITellMessage<object> message)
 	{
-		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
+		yield return _flag ? throw new NotImplementedException() : new TellResult<object>(null);
 	}
 
-	public async IAsyncEnumerable<TellResult> TellInternalProcedurallyAsync(IAsyncEnumerable<TellMessage> message)
+	public async IAsyncEnumerable<ITellResult<object>> TellInternalProcedurallyAsync(IAsyncEnumerable<ITellMessage<object>> message)
 	{
-		yield return _flag ? throw new NotImplementedException() : new TellResult(null);
+		yield return _flag ? throw new NotImplementedException() : new TellResult<object>(null);
 	}
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

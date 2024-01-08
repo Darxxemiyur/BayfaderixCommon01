@@ -3,7 +3,7 @@
 /// <summary>
 /// TellInternally's message interface
 /// </summary>
-public interface ITellMessage
+public interface ITellMessage<out TObject>
 {
 	/// <summary>
 	/// Custom message note.
@@ -15,7 +15,7 @@ public interface ITellMessage
 	/// <summary>
 	/// The message custom message.
 	/// </summary>
-	IIdentifiable<object?>? Message {
+	IIdentifiable<TObject>? Message {
 		get;
 	}
 }

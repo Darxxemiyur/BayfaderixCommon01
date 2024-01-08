@@ -3,7 +3,7 @@
 /// <summary>
 /// TellInternally's result interface.
 /// </summary>
-public interface ITellResult
+public interface ITellResult<out TObject>
 {
 	/// <summary>
 	/// Result code.
@@ -22,7 +22,7 @@ public interface ITellResult
 	/// <summary>
 	/// The message custom result.
 	/// </summary>
-	IIdentifiable<object?>? Result {
+	IIdentifiable<TObject>? Result {
 		get;
 	}
 }
