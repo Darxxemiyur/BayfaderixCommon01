@@ -1,4 +1,4 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿namespace Name.Bayfaderix.Darxxemiyur.DataSource.Abstract;
 
 /// <summary>
 /// Conflict solving delegate.

@@ -1,4 +1,4 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿namespace Name.Bayfaderix.Darxxemiyur.Abstract;
 
 /// <summary>
 /// Meta(data) identity to identify run-time types.

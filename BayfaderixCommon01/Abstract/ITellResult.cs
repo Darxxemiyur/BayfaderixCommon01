@@ -1,4 +1,4 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿namespace Name.Bayfaderix.Darxxemiyur.Abstract;
 
 /// <summary>
 /// TellInternally's result interface.
@@ -8,21 +8,24 @@ public interface ITellResult<out TObject>
 	/// <summary>
 	/// Result code.
 	/// </summary>
-	int Code {
+	int Code
+	{
 		get;
 	}
 
 	/// <summary>
 	/// Custom message note.
 	/// </summary>
-	string? Note {
+	string? Note
+	{
 		get;
 	}
 
 	/// <summary>
 	/// The message custom result.
 	/// </summary>
-	IIdentifiable<TObject>? Result {
+	IIdentifiable<TObject>? Result
+	{
 		get;
 	}
 }

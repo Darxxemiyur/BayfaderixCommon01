@@ -41,7 +41,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	/// </summary>
 	/// <param name="items"></param>
 	/// <returns></returns>
-	public async Task PlaceLast(IAsyncEnumerable<T> items) => await this.PlaceLast(await items.ToEnumerableAsync());
+	public async Task PlaceLast(IAsyncEnumerable<T> items) => await this.PlaceLast(await items.ToEnumerableAsync().ConfigureAwait(_configureAwait)).ConfigureAwait(_configureAwait);
 
 	/// <summary>
 	/// Appends items to the list
@@ -129,6 +129,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 			outQueue.Add(node.Value);
 			_queue.Remove(node);
 		}
+
 		await _crank.TrySetResultAsync().ConfigureAwait(_configureAwait);
 		_crank = new();
 
@@ -161,7 +162,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 
 	private async IAsyncEnumerable<T> AsAsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		foreach (var item in await this.GetAllSafe(cancellationToken))
+		foreach (var item in await this.GetAllSafe(cancellationToken).ConfigureAwait(_configureAwait))
 			yield return item;
 	}
 

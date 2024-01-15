@@ -36,7 +36,8 @@
 	{
 		internal abstract Task Start(CancellationToken token = default);
 
-		public abstract AsyncOpBuilderKind Kind {
+		public abstract AsyncOpBuilderKind Kind
+		{
 			get;
 		}
 
@@ -55,27 +56,33 @@
 			return TaskScheduler.Current;
 		}
 
-		protected CancellationToken? Token {
+		protected CancellationToken? Token
+		{
 			get; private set;
 		}
 
-		protected TaskCreationOptions? CreationOptions {
+		protected TaskCreationOptions? CreationOptions
+		{
 			get; private set;
 		}
 
-		protected TaskContinuationOptions? ContinuationOptions {
+		protected TaskContinuationOptions? ContinuationOptions
+		{
 			get; private set;
 		}
 
-		protected TaskFactory? Factory {
+		protected TaskFactory? Factory
+		{
 			get; private set;
 		}
 
-		protected TaskScheduler? Scheduler {
+		protected TaskScheduler? Scheduler
+		{
 			get; private set;
 		}
 
-		protected bool ConfigureAwait {
+		protected bool ConfigureAwait
+		{
 			get; private set;
 		}
 

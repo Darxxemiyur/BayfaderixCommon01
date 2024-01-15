@@ -1,4 +1,4 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿namespace Name.Bayfaderix.Darxxemiyur.Abstract;
 
 /// <summary>
 /// TellInternally's message interface
@@ -8,14 +8,16 @@ public interface ITellMessage<out TObject>
 	/// <summary>
 	/// Custom message note.
 	/// </summary>
-	string? Note {
+	string? Note
+	{
 		get;
 	}
 
 	/// <summary>
 	/// The message custom message.
 	/// </summary>
-	IIdentifiable<TObject>? Message {
+	IIdentifiable<TObject>? Message
+	{
 		get;
 	}
 }

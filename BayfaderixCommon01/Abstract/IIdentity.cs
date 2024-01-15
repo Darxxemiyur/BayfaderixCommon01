@@ -1,4 +1,4 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿namespace Name.Bayfaderix.Darxxemiyur.Abstract;
 
 /// <summary>
 /// Identity interface. Acts as an ambigous way to uniquely identify data.
@@ -11,7 +11,7 @@ public interface IIdentity : IMetaIdentity
 	/// An optional IIdentity's channel to query it with whatever is needed. Full implementation(if
 	/// any) is up to the user. Can be used to acquire additional objects, access dependency injection, and so on.
 	/// </summary>
-	IMessageCommunicable? QnA => new StupidMessageCommunicable(false);
+	IMessageCommunicable? QnA { get; }
 
 	/// <summary>
 	/// Compares two instances for equality.
@@ -23,7 +23,8 @@ public interface IIdentity : IMetaIdentity
 	/// <summary>
 	/// Whether this identity 'record' has id data to identify some other data.
 	/// </summary>
-	bool HasId {
+	bool HasId
+	{
 		get;
 	}
 }

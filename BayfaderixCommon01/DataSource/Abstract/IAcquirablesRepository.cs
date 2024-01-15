@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Linq.Expressions;
+using Name.Bayfaderix.Darxxemiyur.General;
+using Name.Bayfaderix.Darxxemiyur.Abstract;
 
-namespace Name.Bayfaderix.Darxxemiyur.General;
+namespace Name.Bayfaderix.Darxxemiyur.DataSource.Abstract;
 
 public interface IAcquirablesRepository<T> : IQueryable<IAcquirable<T>>, IQueryable, IEnumerable<IAcquirable<T>>, IEnumerable, IAsyncEnumerable<IAcquirable<T>> where T : class
 {

@@ -1,4 +1,6 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿using Name.Bayfaderix.Darxxemiyur.Abstract;
+
+namespace Name.Bayfaderix.Darxxemiyur.General;
 
 /// <summary>
 /// Stupid filler implementation of IMessageCommunicable that supports no communication. Has flag to throw <see cref="NotImplementedException"/>

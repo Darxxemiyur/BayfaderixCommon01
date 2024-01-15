@@ -1,4 +1,4 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿namespace Name.Bayfaderix.Darxxemiyur.Abstract;
 
 /// <summary>
 /// Presents an interface to allow generic communication with an object.

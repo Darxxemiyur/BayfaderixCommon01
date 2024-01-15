@@ -54,7 +54,8 @@ internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnder
 {
 	private readonly Thread _mainThread;
 
-	public CancellationTokenSource Cancellation {
+	public CancellationTokenSource Cancellation
+	{
 		get;
 	}
 
@@ -67,11 +68,13 @@ internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnder
 		_myTaskSchedulerSource = new();
 		_myTaskFactorySource = new();
 		_tasksToDo = new();
-		_mainThread = new Thread(this.Spin) {
+		_mainThread = new Thread(this.Spin)
+		{
 			IsBackground = true,
 			Priority = threadPriority
 		};
-		this.Post((x) => {
+		this.Post((x) =>
+		{
 			var ts = TaskScheduler.FromCurrentSynchronizationContext();
 			var tf = new TaskFactory(ts);
 			MyTaskScheduler = ts;
@@ -93,12 +96,14 @@ internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnder
 
 	public Task<TaskFactory> MyTaskFactoryPromise => _myTaskFactorySource.Task;
 
-	public TaskScheduler? MyTaskScheduler {
+	public TaskScheduler? MyTaskScheduler
+	{
 		get;
 		private set;
 	}
 
-	public TaskFactory? MyTaskFactory {
+	public TaskFactory? MyTaskFactory
+	{
 		get;
 		private set;
 	}

@@ -5,15 +5,18 @@
 /// </summary>
 public interface IMyUnderlyingContext
 {
-	SynchronizationContext ThisContext {
+	SynchronizationContext ThisContext
+	{
 		get;
 	}
 
-	TaskScheduler? MyTaskScheduler {
+	TaskScheduler? MyTaskScheduler
+	{
 		get;
 	}
 
-	TaskFactory? MyTaskFactory {
+	TaskFactory? MyTaskFactory
+	{
 		get;
 	}
 

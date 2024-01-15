@@ -1,4 +1,4 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿namespace Name.Bayfaderix.Darxxemiyur.Abstract;
 
 /// <summary>
 /// Provides a wrapper for a type that should be identifyable.
@@ -10,19 +10,21 @@ public interface IIdentifiable<out TIdentifyable> : IMetaIdentity
 	/// An optional IIdentifiable's channel to query it with whatever is needed. Full implementation(if
 	/// any) is up to the user. Can be used to acquire additional objects, access dependency injection, and so on.
 	/// </summary>
-	IMessageCommunicable? QnA => new StupidMessageCommunicable(false);
+	IMessageCommunicable? QnA { get; }
 
 	/// <summary>
 	/// Identity of the IIdentifiable. Can be null.
 	/// </summary>
-	IIdentity? Identity {
+	IIdentity? Identity
+	{
 		get;
 	}
 
 	/// <summary>
 	/// The contained instance.
 	/// </summary>
-	TIdentifyable? Identifyable {
+	TIdentifyable? Identifyable
+	{
 		get;
 	}
 

@@ -1,4 +1,6 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.General;
+﻿using Name.Bayfaderix.Darxxemiyur.Abstract;
+
+namespace Name.Bayfaderix.Darxxemiyur.General;
 
 /// <summary>
 /// A non nullable value structure. Do not mistake for ITellResult. They are not the same.

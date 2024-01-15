@@ -1,6 +1,9 @@
 ﻿using System.Linq.Expressions;
 
-namespace Name.Bayfaderix.Darxxemiyur.General;
+using Name.Bayfaderix.Darxxemiyur.General;
+using Name.Bayfaderix.Darxxemiyur.Abstract;
+
+namespace Name.Bayfaderix.Darxxemiyur.DataSource.Abstract;
 
 /// <summary>
 /// Presents an <see cref="IIdentifiable{T}"/> entity that can be asynchroniously acquired.
@@ -11,14 +14,16 @@ public interface IAcquirable<T> where T : class
 	/// <summary>
 	/// Parent repository of this <see cref="IAcquirable{T}"/>
 	/// </summary>
-	IAcquirablesRepository<T> Repository {
+	IAcquirablesRepository<T> Repository
+	{
 		get;
 	}
 
 	/// <summary>
 	/// Identity of <see cref="IAcquirable{T}"/> entity.
 	/// </summary>
-	IIdentity? Identity {
+	IIdentity? Identity
+	{
 		get;
 	}
 

@@ -24,17 +24,16 @@ public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 
 	private async Task InnerPlaceItem(T item)
 	{
-		if (_receivers.Count > 0)
-		{
-			var rem = _receivers.Dequeue();
-			if (!await rem.TrySetResultAsync(item).ConfigureAwait(_configureAwait))
-				await this.InnerPlaceItem(item).ConfigureAwait(_configureAwait);
-		}
-		else
+		if (_receivers.Count <= 0)
 		{
 			_queue.Enqueue(item);
+			return;
 		}
+
+		if (!await _receivers.Dequeue().TrySetResultAsync(item).ConfigureAwait(_configureAwait))
+			await this.InnerPlaceItem(item).ConfigureAwait(_configureAwait);
 	}
+
 
 	/// <summary>
 	/// Place an item. If there are any receivers, hand it to them. If there aren't, place to the queue.
@@ -112,9 +111,7 @@ public class FIFOPFIFOTCollection<T> : IDisposable, IAsyncDisposable
 			return;
 
 		if (disposing)
-		{
 			_lock.Dispose();
-		}
 
 		_disposedValue = true;
 	}
