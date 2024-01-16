@@ -73,16 +73,6 @@ internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnder
 			IsBackground = true,
 			Priority = threadPriority
 		};
-		this.Post((x) =>
-		{
-			var ts = TaskScheduler.FromCurrentSynchronizationContext();
-			var tf = new TaskFactory(ts);
-			MyTaskScheduler = ts;
-			_myTaskSchedulerSource.TrySetResult(ts);
-			MyTaskFactory = tf;
-			_myTaskFactorySource.TrySetResult(tf);
-		}, null);
-		_mainThread.Start(this);
 	}
 
 	private readonly EventWaitHandle _handle;
@@ -121,10 +111,13 @@ internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnder
 	private readonly ConcurrentBag<(SendOrPostCallback, object?)> _tasksToDo;
 	private readonly LinkedList<(SendOrPostCallback, object?)> _tasks;
 	private bool _disposedValue;
-
-	private void Spin(object? context)
+	private void Spin()
 	{
-		SetSynchronizationContext(context as MySingleThreadSyncContextInner);
+		var ts = TaskScheduler.FromCurrentSynchronizationContext();
+		_myTaskSchedulerSource.TrySetResult(MyTaskScheduler = ts);
+		_myTaskFactorySource.TrySetResult(MyTaskFactory = new TaskFactory(ts));
+
+		SetSynchronizationContext(this);
 		while (!Cancellation.IsCancellationRequested)
 		{
 			while (_tasksToDo.TryTake(out var item))
@@ -139,13 +132,11 @@ internal class MySingleThreadSyncContextInner : SynchronizationContext, IMyUnder
 		}
 	}
 
-	public async Task Place(BatchAsyncOpBuilder asyncOp) => throw new NotImplementedException();
+	public Task Place(BatchAsyncOpBuilder asyncOp) => asyncOp.WithScheduler(MyTaskScheduler).Start();
 
 	protected virtual void Dispose(bool disposing)
 	{
-		if (_disposedValue)
-			return;
-		if (!disposing)
+		if (_disposedValue || !disposing)
 			return;
 
 		Cancellation.Cancel();
