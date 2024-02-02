@@ -2,38 +2,36 @@
 
 namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
 
+public delegate Task NodeReceiverDelegate(IAsyncEnumerable<INodeContainer> items);
+
 public class NodeReceiver : INodeReceiver
 {
-	private readonly List<INodeLink> _inputLinks;
-	private readonly FIFOFBACollection<INodeContainer> _itemList;
+	private INodeTranceiver? _link;
+	private readonly NodeReceiverDelegate _pusher;
 	private readonly bool _configureAwait;
 
-	public NodeReceiver(bool configureAwait = false) => (_inputLinks, _itemList, _configureAwait) = (new(), new(), configureAwait);
+	public NodeReceiver(NodeReceiverDelegate receiver, bool configureAwait = false) => (_pusher, _configureAwait) = (receiver, configureAwait);
 
 	public async Task Link(INodeTranceiver source)
 	{
-		var link = new ItemInstantTransferLink(source, this);
-		await source.Link(link).ConfigureAwait(_configureAwait);
-		await this.Link(link).ConfigureAwait(_configureAwait);
-	}
-
-	public Task Link(INodeLink link)
-	{
-		_inputLinks.Add(link);
-		return Task.CompletedTask;
-	}
-
-	public Task<INodeContainer> Retrieve() => _itemList.GetData();
-
-	public Task Push(INodeContainer item) => _itemList.Handle(item);
-
-	public async Task UnLink(INodeTranceiver source)
-	{
-		if (_inputLinks.Find(x => x.IsThisPair(source, this)) is var link && link == default)
+		if (_link == source)
 			return;
-		await this.UnLink(link).ConfigureAwait(_configureAwait);
-		await source.UnLink(link).ConfigureAwait(_configureAwait);
+		await this.UnLink();
+		_link = source;
+		await source.Link(this).ConfigureAwait(_configureAwait);
 	}
 
-	public Task UnLink(INodeLink link) => Task.FromResult(_inputLinks.Remove(link));
+	public async Task UnLink()
+	{
+		var link = _link;
+		if (link == null)
+			return;
+		_link = null;
+		await link.UnLink().ConfigureAwait(_configureAwait);
+	}
+	//Yes this is intentional.
+	public IAsyncEnumerable<INodeContainer> Retrieve() => _link.Retrieve();
+
+	public Task Push(IAsyncEnumerable<INodeContainer> item) => _pusher?.Invoke(item) ?? Task.CompletedTask;
+
 }

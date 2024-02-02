@@ -1,34 +1,32 @@
 ﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
 
+public delegate IAsyncEnumerable<INodeContainer> Retriever();
 public class NodeTranceiver : INodeTranceiver
 {
-	private readonly List<INodeLink> _outputLinks;
+	private INodeReceiver? _link;
 	private readonly bool _configureAwait;
-
-	public NodeTranceiver(bool configureAwait = false) => (_configureAwait, _outputLinks) = (configureAwait, new());
+	private readonly Func<IAsyncEnumerable<INodeContainer>> _puller;
+	public NodeTranceiver(Func<IAsyncEnumerable<INodeContainer>> puller, bool configureAwait = false) => (_puller, _configureAwait) = (puller, configureAwait);
 
 	public async Task Link(INodeReceiver sink)
 	{
-		var link = new ItemInstantTransferLink(this, sink);
-		await sink.Link(link).ConfigureAwait(_configureAwait);
-		await this.Link(link).ConfigureAwait(_configureAwait);
-	}
-
-	public Task Link(INodeLink link)
-	{
-		_outputLinks.Add(link);
-		return Task.CompletedTask;
-	}
-
-	public async Task UnLink(INodeReceiver sink)
-	{
-		if (_outputLinks.Find(x => x.IsThisPair(this, sink)) is var link && link == default)
+		if (_link == sink)
 			return;
-		await this.UnLink(link).ConfigureAwait(_configureAwait);
-		await sink.UnLink(link).ConfigureAwait(_configureAwait);
+		await this.UnLink();
+		_link = sink;
+		await sink.Link(this).ConfigureAwait(_configureAwait);
 	}
 
-	public Task UnLink(INodeLink link) => Task.FromResult(_outputLinks.Remove(link));
+	public async Task UnLink()
+	{
+		var link = _link;
+		if (link == null)
+			return;
+		_link = null;
+		await link.UnLink().ConfigureAwait(_configureAwait);
+	}
 
-	public Task Propogate(INodeContainer item) => Task.WhenAll(_outputLinks.Select(x => x.Propogate(item)));
+	public Task Push(IAsyncEnumerable<INodeContainer> item) => _link?.Push(item) ?? Task.CompletedTask;
+
+	public IAsyncEnumerable<INodeContainer> Retrieve() => (IAsyncEnumerable<INodeContainer>)_puller?.DynamicInvoke();
 }

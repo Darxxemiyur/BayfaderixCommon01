@@ -1,12 +1,12 @@
 ﻿namespace Name.Bayfaderix.Darxxemiyur.Node.Linkable;
 
-public interface INodeReceiver : ILinkable
+public interface INodeReceiver
 {
-	Task Push(INodeContainer item);
+	Task Push(IAsyncEnumerable<INodeContainer> item);
 
-	Task<INodeContainer> Retrieve();
+	IAsyncEnumerable<INodeContainer> Retrieve();
 
 	Task Link(INodeTranceiver source);
 
-	Task UnLink(INodeTranceiver source);
+	Task UnLink();
 }
