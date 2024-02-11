@@ -5,7 +5,7 @@ using Name.Bayfaderix.Darxxemiyur.Abstract;
 
 namespace Name.Bayfaderix.Darxxemiyur.DataSource.Abstract;
 
-public interface IAcquirablesRepository<T> : IQueryable<IAcquirable<T>>, IQueryable, IEnumerable<IAcquirable<T>>, IEnumerable, IAsyncEnumerable<IAcquirable<T>> where T : class
+public interface IAcquirablesRepository<T> : IQueryable<IAcquirablesSet<T>>, IQueryable, IEnumerable<IAcquirablesSet<T>>, IEnumerable, IAsyncEnumerable<IAcquirablesSet<T>> where T : class
 {
 	/// <summary>
 	/// Primarily intended to be used with optional configuring.
@@ -19,7 +19,7 @@ public interface IAcquirablesRepository<T> : IQueryable<IAcquirable<T>>, IQuerya
 	/// <returns></returns>
 	Task<IAcquirable<T>> GetAcquirable(Expression<Func<T, bool>>? predicate);
 
-	IAsyncEnumerable<IAcquirable<T>> GetAcquirables(Expression<Func<T, bool>>? predicate);
+	Task<IAcquirablesSet<T>> GetAcquirables(Expression<Func<T, bool>>? predicate);
 
 	bool IsLoaded(T acquired, Expression<Func<T, IIdentifiable<object>>> expression);
 	Task<bool> TryLoad(T acquired, Expression<Func<T, IIdentifiable<object>>> expression);
