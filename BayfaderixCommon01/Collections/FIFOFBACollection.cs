@@ -48,7 +48,7 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 		LinkedListNode<Task<T>> result;
 
 		await using (var _ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
-			result = _chain.First;
+			result = _chain.First!;
 
 		using var revert = new MyTaskSource<T>(token);
 
