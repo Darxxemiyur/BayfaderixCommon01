@@ -1,17 +1,26 @@
-﻿namespace Name.Bayfaderix.Darxxemiyur.Tasks;
+﻿using System.Threading.Tasks;
+
+namespace Name.Bayfaderix.Darxxemiyur.Tasks;
 
 /// <summary>
-/// Smart async runnable that can be started and stopped.
+/// Smart async runnable that can be started and stopped with an exposed object.
 /// </summary>
-public interface ISmartAsyncRunnable<T>
+public interface ISmartAsyncRunnable<T> : ISmartAsyncRunnable
 {
 	/// <summary>
 	/// A retrievable object exposed by the instance.
 	/// </summary>
-	MyTaskSource<T> ExposedObject {
+	Task<T> ExposedObject
+	{
 		get;
 	}
+}
 
+/// <summary>
+/// Smart async runnable that can be started and stopped.
+/// </summary>
+public interface ISmartAsyncRunnable
+{
 	/// <summary>
 	/// Starts the runnable(a long-term task)
 	/// </summary>
@@ -29,14 +38,7 @@ public interface ISmartAsyncRunnable<T>
 	/// <summary>
 	/// Stops async runnable.
 	/// </summary>
-	/// <param name="token">The cancellation token to stop the runnable stopping.</param>
+	/// <param name="token">The cancellation token to stop the smart runnable.</param>
 	/// <returns></returns>
 	Task StopRunnable(CancellationToken token = default);
-}
-
-/// <summary>
-/// <inheritdoc/>
-/// </summary>
-public interface ISmartAsyncRunnable : ISmartAsyncRunnable<object>
-{
 }

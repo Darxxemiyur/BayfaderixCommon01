@@ -30,18 +30,16 @@ public sealed class AsyncLocker : IDisposable
 		if (_disposedValue)
 			throw new ObjectDisposedException(this.GetType().Name);
 		await this.AsyncLock(token).ConfigureAwait(_configureAwait);
-		return new BlockAsyncLock(this, configureAwait);
+		return new BlockAsyncLock(this);
 	}
 
-	public BlockAsyncLock ScopeLock(bool configureAwait = false)
+	public BlockAsyncLock ScopeLock()
 	{
 		if (_disposedValue)
 			throw new ObjectDisposedException(this.GetType().Name);
 		this.Lock();
-		return new BlockAsyncLock(this, configureAwait);
+		return new BlockAsyncLock(this);
 	}
-
-	public Task AsyncUnlock() => MyTaskExtensions.RunOnScheduler(this.Unlock);
 
 	public void Unlock()
 	{

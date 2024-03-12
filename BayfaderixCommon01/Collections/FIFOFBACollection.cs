@@ -15,12 +15,12 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	{
 		_sync = new();
 		_chain = new();
-		_chain.AddFirst((_generator = new()).MyTask);
+		_chain.AddFirst((_generator = new()).Task);
 		_configureAwait = configureAwait;
 	}
 
 	private readonly bool _configureAwait;
-	private MyTaskSource<T> _generator;
+	private TaskCompletionSource<T> _generator;
 	private readonly LinkedList<Task<T>> _chain;
 	private readonly AsyncLocker _sync;
 
@@ -28,36 +28,37 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 
 	public async Task Handle(T stuff)
 	{
-		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 
-		if (_generator.MyTask.IsCanceled)
-			await _generator.MyTask.ConfigureAwait(_configureAwait);
+		if (_generator.Task.IsCanceled)
+			await _generator.Task.ConfigureAwait(_configureAwait);
 
-		await _generator.TrySetResultAsync(stuff).ConfigureAwait(_configureAwait);
-		_chain.AddLast((_generator = new()).MyTask);
+		_generator.TrySetResult(stuff);
+		_chain.AddLast((_generator = new()).Task);
 	}
 
 	public async Task Cancel()
 	{
-		await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
-		await _generator.TrySetCanceledAsync().ConfigureAwait(_configureAwait);
+		using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		_generator.TrySetCanceled();
 	}
 
 	public async Task<T> GetData(CancellationToken token = default)
 	{
 		LinkedListNode<Task<T>> result;
 
-		await using (var _ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+		using (var _ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			result = _chain.First!;
 
-		using var revert = new MyTaskSource<T>(token);
+		var source = new TaskCompletionSource<T>();
+		using var reg = token.Register(() => source.TrySetResult(default));
 
-		var either = await Task.WhenAny(result.Value, revert.MyTask).ConfigureAwait(_configureAwait);
+		var either = await Task.WhenAny(result.Value, source.Task).ConfigureAwait(_configureAwait);
 
 		if (either == result.Value)
 		{
-			await using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
-			if (result.List != null)
+			using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+			if (result.List == _chain)
 				_chain.Remove(result);
 		}
 
@@ -73,7 +74,6 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 
 		if (disposing)
 		{
-			_generator.Dispose();
 			_generator = null;
 			_sync.Dispose();
 		}

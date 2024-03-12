@@ -31,7 +31,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	/// <returns></returns>
 	public async Task PlaceLast(T item)
 	{
-		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		_queue.AddLast(item);
 		await _crank.TrySetResultAsync().ConfigureAwait(_configureAwait);
 	}
@@ -50,7 +50,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	/// <returns></returns>
 	public async Task PlaceLast(IEnumerable<T> items)
 	{
-		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		foreach (var item in items)
 			_queue.AddLast(item);
 		await _crank.TrySetResultAsync().ConfigureAwait(_configureAwait);
@@ -63,7 +63,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	/// <returns></returns>
 	public async Task PlaceFirst(T item)
 	{
-		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		_queue.AddFirst(item);
 		await _crank.TrySetResultAsync().ConfigureAwait(_configureAwait);
 	}
@@ -82,7 +82,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	/// <returns></returns>
 	public async Task PlaceFirst(IEnumerable<T> items)
 	{
-		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		foreach (var item in items.Reverse())
 			_queue.AddFirst(item);
 		await _crank.TrySetResultAsync().ConfigureAwait(_configureAwait);
@@ -97,7 +97,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	{
 		Task task;
 
-		await using (var _ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
+		using (var _ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
 			task = _crank.MyTask;
 
 		await task.RelayAsync(token).ConfigureAwait(_configureAwait);
@@ -120,7 +120,7 @@ public class FIFOPTACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 	/// <returns></returns>
 	public async Task<IEnumerable<T>> GetAll()
 	{
-		await using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+		using var __ = await _lock.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
 		var outQueue = new List<T>(_queue.Count);
 
 		while (_queue.Count > 0)

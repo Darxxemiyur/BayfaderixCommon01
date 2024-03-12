@@ -4,17 +4,17 @@
 /// Presents GC removable ISmartAsyncRunnable
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public sealed class AsyncRunnableFinilizable<T> : IDisposable, IAsyncDisposable, ISmartAsyncRunnable where T : ISmartAsyncRunnable
+public sealed class AsyncRunnableFinilizable<T, TRunnable> : IDisposable, IAsyncDisposable, ISmartAsyncRunnable where T : ISmartAsyncRunnable<TRunnable>
 {
 	private readonly T _runnable;
 	private bool _disposedValue;
 	private bool _ca;
 
-	public MyTaskSource<object> ExposedObject => _runnable.ExposedObject;
+	public Task<TRunnable> ExposedObject => _runnable.ExposedObject;
 
 	public AsyncRunnableFinilizable(T instance) => _runnable = instance;
 
-	public AsyncRunnableFinilizable<T> ConfigureAwait(bool ca)
+	public AsyncRunnableFinilizable<T, TRunnable> ConfigureAwait(bool ca)
 	{
 		_ca = ca;
 		return this;

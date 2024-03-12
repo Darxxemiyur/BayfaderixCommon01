@@ -61,5 +61,14 @@ public interface IMessageCommunicable<out TResult, in TMessage, TResultParent> w
 /// <summary>
 /// Default assisted IMessageCommunicable implementation.
 /// </summary>
-public interface IMessageCommunicable : IMessageCommunicable<object, object, object>
+#pragma warning disable CS8631 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.
+//............ Because you cannot have a constraint to derive from the System.Object in generics?
+public interface IMessageCommunicable<TResult> : IMessageCommunicable<TResult, object, object>
+#pragma warning restore CS8631 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.
+{ }
+
+/// <summary>
+/// Default assisted IMessageCommunicable implementation.
+/// </summary>
+public interface IMessageCommunicable : IMessageCommunicable<object>
 { }
