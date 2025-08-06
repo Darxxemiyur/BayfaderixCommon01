@@ -19,10 +19,10 @@ public interface IAcquirable<T> where T : class
 		get;
 	}
 
-	/// <summary>
-	/// Identity of <see cref="IAcquirable{T}"/> entity.
-	/// </summary>
-	IIdentity? Identity
+    /// <summary>
+    /// Identity of <see cref="IAcquirable{T}"/> entity.
+    /// </summary>
+    IConcreteDataIdentity? Identity
 	{
 		get;
 	}

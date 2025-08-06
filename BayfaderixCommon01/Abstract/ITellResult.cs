@@ -24,7 +24,7 @@ public interface ITellResult<out TObject>
 	/// <summary>
 	/// The message custom result.
 	/// </summary>
-	IIdentifiable<TObject>? Result
+	TObject Result
 	{
 		get;
 	}

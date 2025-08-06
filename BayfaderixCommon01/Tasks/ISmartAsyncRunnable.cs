@@ -10,7 +10,7 @@ public interface ISmartAsyncRunnable<T> : ISmartAsyncRunnable
 	/// <summary>
 	/// A retrievable object exposed by the instance.
 	/// </summary>
-	Task<T> ExposedObject
+	T ExposedObject
 	{
 		get;
 	}
@@ -26,19 +26,19 @@ public interface ISmartAsyncRunnable
 	/// </summary>
 	/// <param name="token">The cancellation token to stop the runnable running.</param>
 	/// <returns></returns>
-	Task RunRunnable(CancellationToken token = default);
+	Task StartRunnable(CancellationToken token = default);
 
 	/// <summary>
 	/// Reports if the runnable is running.
 	/// </summary>
 	/// <param name="token">The cancellation token to stop the status fetching.</param>
 	/// <returns></returns>
-	Task<bool> IsRunning(CancellationToken token = default);
+	ValueTask<bool> IsRunning(CancellationToken token = default);
 
 	/// <summary>
 	/// Stops async runnable.
 	/// </summary>
-	/// <param name="token">The cancellation token to stop the smart runnable.</param>
+	/// <param name="token">The cancellation token to cancel stopping the smart runnable.</param>
 	/// <returns></returns>
 	Task StopRunnable(CancellationToken token = default);
 }

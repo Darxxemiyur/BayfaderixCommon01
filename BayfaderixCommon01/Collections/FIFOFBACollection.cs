@@ -1,4 +1,5 @@
-﻿using Name.Bayfaderix.Darxxemiyur.Extensions;
+﻿using Name.Bayfaderix.Darxxemiyur.Abstract;
+using Name.Bayfaderix.Darxxemiyur.Extensions;
 using Name.Bayfaderix.Darxxemiyur.Tasks;
 
 using System.Runtime.CompilerServices;
@@ -9,95 +10,122 @@ namespace Name.Bayfaderix.Darxxemiyur.Collections;
 /// FIFO Fetch Blocking Async Collection | FIFOFBACollection
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumerable<T>
+public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumerable<T>, IAsyncCloneable<FIFOFBACollection<T>>
 {
-	public FIFOFBACollection(bool configureAwait = false)
-	{
-		_sync = new();
-		_chain = new();
-		_chain.AddFirst((_generator = new()).Task);
-		_configureAwait = configureAwait;
-	}
+    public FIFOFBACollection(bool configureAwait = false)
+    {
+        _sync = new();
+        _chain = new();
+        _chain.AddFirst((_generator = new()).Task);
+        _configureAwait = configureAwait;
+    }
 
-	private readonly bool _configureAwait;
-	private TaskCompletionSource<T> _generator;
-	private readonly LinkedList<Task<T>> _chain;
-	private readonly AsyncLocker _sync;
+    private readonly bool _configureAwait;
+    private TaskCompletionSource<T> _generator;
+    private readonly LinkedList<Task<T>> _chain;
+    private readonly AsyncLocker _sync;
 
-	public Task<bool> HasAny() => Task.FromResult(_chain.Any(x => x.IsCompleted));
+    public async Task<bool> HasAny()
+    {
+        using var __ = await _sync.ScopeLockAsync(default, _configureAwait).ConfigureAwait(_configureAwait);
+        foreach (var item in _chain)
+            if (item.IsCompleted)
+                return true;
+        return false;
+    }
 
-	public async Task Handle(T stuff)
-	{
-		using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
+    public async Task Handle(T stuff)
+    {
+        using var __ = await _sync.ScopeLockAsync(default, _configureAwait).ConfigureAwait(_configureAwait);
 
-		if (_generator.Task.IsCanceled)
-			await _generator.Task.ConfigureAwait(_configureAwait);
+        if (_generator.Task.IsCanceled)
+            await _generator.Task.ConfigureAwait(_configureAwait);
 
-		_generator.TrySetResult(stuff);
-		_chain.AddLast((_generator = new()).Task);
-	}
+        _generator.TrySetResult(stuff);
+        _chain.AddLast((_generator = new()).Task);
+    }
 
-	public async Task Cancel()
-	{
-		using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
-		_generator.TrySetCanceled();
-	}
+    public async Task Cancel()
+    {
+        using var __ = await _sync.ScopeLockAsync(default, _configureAwait).ConfigureAwait(_configureAwait);
+        _generator.TrySetCanceled();
+    }
 
-	public async Task<T> GetData(CancellationToken token = default)
-	{
-		LinkedListNode<Task<T>> result;
+    public async Task<T> GetData(CancellationToken token = default)
+    {
+        LinkedListNode<Task<T>> result;
 
-		using (var _ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait))
-			result = _chain.First!;
+        using (var _ = await _sync.ScopeLockAsync(default, _configureAwait).ConfigureAwait(_configureAwait))
+            result = _chain.First!;
 
-		var source = new TaskCompletionSource<T>();
-		using var reg = token.Register(() => source.TrySetResult(default));
+        var source = new TaskCompletionSource<T>();
+        using var reg = token.Register(() => source.TrySetResult(default));
 
-		var either = await Task.WhenAny(result.Value, source.Task).ConfigureAwait(_configureAwait);
+        var either = await Task.WhenAny(result.Value, source.Task).ConfigureAwait(_configureAwait);
 
-		if (either == result.Value)
-		{
-			using var __ = await _sync.ScopeAsyncLock(default, _configureAwait).ConfigureAwait(_configureAwait);
-			if (result.List == _chain)
-				_chain.Remove(result);
-		}
+        if (either == result.Value)
+        {
+            using var __ = await _sync.ScopeLockAsync(default, _configureAwait).ConfigureAwait(_configureAwait);
+            if (result.List == _chain)
+                _chain.Remove(result);
+        }
 
-		return await either.ConfigureAwait(_configureAwait);
-	}
+        return await either.ConfigureAwait(_configureAwait);
+    }
 
-	private bool disposedValue;
+    private bool disposedValue;
 
-	protected virtual void Dispose(bool disposing)
-	{
-		if (disposedValue)
-			return;
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposedValue)
+            return;
 
-		if (disposing)
-		{
-			_generator = null;
-			_sync.Dispose();
-		}
+        if (disposing)
+        {
+            _generator = null;
+            _sync.Dispose();
+        }
 
-		disposedValue = true;
-	}
+        disposedValue = true;
+    }
 
-	public void Dispose()
-	{
-		this.Dispose(true);
-		GC.SuppressFinalize(this);
-	}
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-	private async IAsyncEnumerable<T> AsAsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
-	{
-		while (await this.HasAny() && !cancellationToken.IsCancellationRequested)
-			yield return await this.GetData(cancellationToken);
-	}
+    private async IAsyncEnumerable<T> AsAsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        while (await this.HasAny() && !cancellationToken.IsCancellationRequested)
+            yield return await this.GetData(cancellationToken);
+    }
 
-	public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this.AsAsyncEnumerable(cancellationToken).GetAsyncEnumerator(cancellationToken);
+    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this.AsAsyncEnumerable(cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-	public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(this.Dispose));
+    public ValueTask DisposeAsync() => new(MyTaskExtensions.RunOnScheduler(this.Dispose));
 
-	~FIFOFBACollection() => this.Dispose(false);
+    public async Task<FIFOFBACollection<T>> CloneAsync()
+    {
+        var collection = new FIFOFBACollection<T>();
+
+        using var __ = await _sync.ScopeLockAsync(default, _configureAwait).ConfigureAwait(_configureAwait);
+        var node = _chain.Last!;
+
+        do
+            if (node.Value.IsCompleted)
+                collection._chain.AddFirst(node.Value);
+        while ((node = node.Previous) != null);
+
+        return collection;
+    }
+
+    public Task<FIFOFBACollection<T>> CloneAsync(object input)
+    {
+        throw new NotImplementedException();
+    }
+
+    ~FIFOFBACollection() => this.Dispose(false);
 }
 
 /// <summary>
@@ -105,36 +133,36 @@ public class FIFOFBACollection<T> : IDisposable, IAsyncDisposable, IAsyncEnumera
 /// </summary>
 public class FIFOFBACollection : IDisposable
 {
-	public FIFOFBACollection() => _facade = new();
+    public FIFOFBACollection() => _facade = new();
 
-	private FIFOFBACollection<bool> _facade;
+    private FIFOFBACollection<bool> _facade;
 
-	public Task<bool> HasAny() => _facade.HasAny();
+    public Task<bool> HasAny() => _facade.HasAny();
 
-	public Task Handle() => _facade.Handle(true);
+    public Task Handle() => _facade.Handle(true);
 
-	public Task Cancel() => _facade.Cancel();
+    public Task Cancel() => _facade.Cancel();
 
-	public Task GetData(CancellationToken token = default) => _facade.GetData(token);
+    public Task GetData(CancellationToken token = default) => _facade.GetData(token);
 
-	private bool disposedValue;
+    private bool disposedValue;
 
-	protected virtual void Dispose(bool disposing)
-	{
-		if (disposedValue)
-			return;
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposedValue)
+            return;
 
-		if (disposing)
-			((IDisposable)_facade).Dispose();
+        if (disposing)
+            ((IDisposable)_facade).Dispose();
 
-		disposedValue = true;
-	}
+        disposedValue = true;
+    }
 
-	public void Dispose()
-	{
-		this.Dispose(true);
-		GC.SuppressFinalize(this);
-	}
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-	~FIFOFBACollection() => this.Dispose(false);
+    ~FIFOFBACollection() => this.Dispose(false);
 }

@@ -7,4 +7,4 @@
 /// <param name="ours">Our version of data</param>
 /// <param name="theirs"></param>
 /// <returns></returns>
-public delegate T? ConflictSolver<T>(T? ours, T? theirs);
+public delegate T ConflictSolver<T>(T ours, T theirs);

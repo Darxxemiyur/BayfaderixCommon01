@@ -4,7 +4,7 @@
 /// Presents GC removable ISmartAsyncRunnable
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public sealed class AsyncRunnableFinilizable<T, TRunnable> : IDisposable, IAsyncDisposable, ISmartAsyncRunnable where T : ISmartAsyncRunnable<TRunnable>
+public sealed class AsyncRunnableFinilizable<T, TRunnable> : IDisposable, IAsyncDisposable, ISmartAsyncRunnable where T : ISmartAsyncRunnable<Task<TRunnable>>
 {
 	private readonly T _runnable;
 	private bool _disposedValue;
@@ -34,7 +34,7 @@ public sealed class AsyncRunnableFinilizable<T, TRunnable> : IDisposable, IAsync
 		await adr.DisposeAsync().ConfigureAwait(_ca);
 	}
 
-	public Task RunRunnable(CancellationToken token = default) => _runnable.RunRunnable(token);
+	public Task StartRunnable(CancellationToken token = default) => _runnable.StartRunnable(token);
 
 	public Task StopRunnable(CancellationToken token = default) => _runnable.StopRunnable(token);
 
@@ -59,5 +59,5 @@ public sealed class AsyncRunnableFinilizable<T, TRunnable> : IDisposable, IAsync
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = bruh)]
 	public void Dispose() => this.Dispose(disposing: true);
 
-	public Task<bool> IsRunning(CancellationToken token = default) => _runnable.IsRunning(token);
+	public ValueTask<bool> IsRunning(CancellationToken token = default) => _runnable.IsRunning(token);
 }

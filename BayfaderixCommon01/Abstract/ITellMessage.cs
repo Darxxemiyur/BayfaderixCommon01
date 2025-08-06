@@ -16,7 +16,7 @@ public interface ITellMessage<out TObject>
 	/// <summary>
 	/// The message custom message.
 	/// </summary>
-	IIdentifiable<TObject>? Message
+	TObject Payload
 	{
 		get;
 	}

@@ -5,7 +5,7 @@ namespace Name.Bayfaderix.Darxxemiyur.General;
 /// <summary>
 /// Stupid filler implementation of IMessageCommunicable that supports no communication. Has flag to throw <see cref="NotImplementedException"/>
 /// </summary>
-public class StupidMessageCommunicable : IMessageCommunicable
+public sealed class StupidMessageCommunicable : IMessageCommunicable
 {
 	private readonly bool _flag;
 
@@ -42,6 +42,12 @@ public class StupidMessageCommunicable : IMessageCommunicable
 	{
 		yield return _flag ? throw new NotImplementedException() : new TellResult<object>(null);
 	}
+
+	public ITellResult<object> TellInternal(IEnumerable<ITellMessage<object>> message) => throw new NotImplementedException();
+
+
+	public Task<ITellResult<T>> TellInternalAsync<T>(IEnumerable<ITellMessage<object>> message) => throw new NotImplementedException();
+
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }

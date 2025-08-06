@@ -6,7 +6,7 @@ using Name.Bayfaderix.Darxxemiyur.Abstract;
 namespace Name.Bayfaderix.Darxxemiyur.DataSource.Abstract;
 
 /// <summary>
-/// Presents an <see cref="IIdentifiable{T}"/> entity that can be asynchroniously acquired.
+/// Presents an <see cref="IAcquirablesSet{T}"/> entity set that can be asynchroniously acquired.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public interface IAcquirablesSet<T> where T : class

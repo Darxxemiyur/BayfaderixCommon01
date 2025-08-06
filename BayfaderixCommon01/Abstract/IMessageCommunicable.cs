@@ -14,24 +14,28 @@ public interface IMessageCommunicable<out TResult, in TMessage, TResultParent> w
 	}
 
 	/// <summary>
-	/// Acquire instance communication capabilities asynchroniously.
-	/// </summary>
-	Task<CommunicableCapabilities> CapabilitiesAsync
-	{
-		get;
-	}
-
-	/// <summary>
 	/// Communicate instance an object.
 	/// </summary>
 	/// <returns>The tell result.</returns>
 	ITellResult<TResult> TellInternal(ITellMessage<TMessage> message);
 
+    /// <summary>
+    /// Communicate instance an object asynchroniously.
+    /// </summary>
+    /// <returns>The awaitable tell result.</returns>
+    Task<ITellResult<T>> TellInternalAsync<T>(ITellMessage<TMessage> message) where T : TResultParent;
+
+    /// <summary>
+    /// Communicate instance an object.
+    /// </summary>
+    /// <returns>The tell result.</returns>
+    ITellResult<TResult> TellInternal(IEnumerable<ITellMessage<TMessage>> message);
+
 	/// <summary>
 	/// Communicate instance an object asynchroniously.
 	/// </summary>
 	/// <returns>The awaitable tell result.</returns>
-	Task<ITellResult<T>> TellInternalAsync<T>(ITellMessage<TMessage> message) where T : TResultParent;
+	Task<ITellResult<T>> TellInternalAsync<T>(IEnumerable<ITellMessage<TMessage>> message) where T : TResultParent;
 
 	/// <summary>
 	/// Communicate instance an object.
